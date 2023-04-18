@@ -347,8 +347,20 @@ void add_sample(string path, string reference, unordered_set<int> mask){
     save("saves/"+s->uuid, s);
 }
 
+void save_comparisons(vector<tuple<string, string, int>> comparisons){
+    //Save some comparisons to disk in a threadsafe manner
+    mutex_lock.lock();
+        fstream output("outputs/all.txt", fstream::app);
+        for(const tuple<string, string, int> elem: comparisons){
+            output << get<0>(elem) << " " << get<1>(elem) << " " << get<2>(elem) << endl;
+        }
+        output.close();
+    mutex_lock.unlock();
+}
+
 void do_comparisons(vector<tuple<Sample*, Sample*>> comparisons, int cutoff){
     //To be used by Thread to do comparisons in parallel
+    vector<tuple<string, string, int>> distances;
     for(int i=0;i<comparisons.size();i++){
         Sample *s1 = get<0>(comparisons.at(i));
         Sample *s2 = get<1>(comparisons.at(i));
@@ -357,16 +369,25 @@ void do_comparisons(vector<tuple<Sample*, Sample*>> comparisons, int cutoff){
             //Further than cutoff so ignore
             continue;
         }
+        distances.push_back(make_tuple(s1->uuid, s2->uuid, dist));
 
+        if(distances.size() == 1000){
+            //We have a fair few comparisons now, so save
+            save_comparisons(distances);
+            //Clear for continuing
+            distances = {};
+
+        }
         //Adding to file separately might be slightly faster (due to mutex), but this involves constructing
         //In-RAM comparisons which scales poorly as RAM is limiting factor
-        mutex_lock.lock();
-            fstream output("outputs/all.txt", fstream::app);
-            output << s1->uuid << " " << s2->uuid << " " << dist << endl;
-            output.close();
-        mutex_lock.unlock();
+        // mutex_lock.lock();
+        //     fstream output("outputs/all.txt", fstream::app);
+        //     output << s1->uuid << " " << s2->uuid << " " << dist << endl;
+        //     output.close();
+        // mutex_lock.unlock();
     }
-
+    //And save the last few (if existing)
+    save_comparisons(distances);
 }
 
 void compute(int cutoff){
