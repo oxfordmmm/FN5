@@ -394,7 +394,7 @@ void compute_loaded(int cutoff, vector<Sample*> samples, int thread_count){
             }
         }
     }
-    cout << "Comparing " << comparisons.size() << endl;
+    cout << "Comparing " << samples.size() << " for a total of " << comparisons.size() << " comparisons" << endl;
 
     //Clear output file ready for thread-by-thread appending
     fstream output("outputs/all.txt", fstream::out);
