@@ -7,6 +7,12 @@ Currently argument parsing isn't well implemented (this is proof of concept). In
 
 Also uses 20 threads where multithreaded currently.
 
+# Load testing
+Using the cryptic set of 15229 samples, on a VM with 64 cores (using max 250 threads):
+
+* Time to parse and save to disk: 2min 33s
+* Time to construct SNP matrix with cutoff 20: 6min 20s
+
 ## Compile
 ```
 g++ fast-snp.cpp -std=c++20 -w -pthread -O3 -o fast-snp
@@ -28,11 +34,10 @@ Cutoff is a mandatory parameter (set arbitrarily high to ignore). `12` is a good
 
 ## TODO:
 * Replace hard coded values such as save path, ref genome etc
-* Multithread reading saves from disk?
+* Multithread reading saves from disk? Possibly worse performance??
 * Lower case FASTA support
 * Clean up arg parsing to be less rigid
 * Proper DB? Currently this is based on the idea that the output file can be parsed as required
 * Ref genome isn't strictly a FASTA file, but that is trivial to update
 * Binary saves rather than ASCII
-* Add support for `-` values as well as `N`
 

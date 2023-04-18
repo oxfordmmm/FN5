@@ -78,12 +78,14 @@ class Sample{
                         case 'N':
                             N.insert(i);
                             break;
+                        case '-':
+                            N.insert(i);
+                            break;
                     }
                 }
                 i++;
             }
             fin.close();
-            // cout << "A " << A.size() << " C " << C.size() << " G " << G.size() << " T " << T.size() << " N " << N.size() << endl; 
         }
 
         Sample(unordered_set<int> a, unordered_set<int> c, unordered_set<int> g, unordered_set<int> t, unordered_set<int> n){
@@ -104,6 +106,8 @@ class Sample{
         }
 
         unordered_set<int> dist_x(unordered_set<int> this_x, unordered_set<int> this_n, unordered_set<int> sample_x, unordered_set<int> sample_n, unordered_set<int> acc, int cutoff){
+            //Increment cutoff so we can reject distances > cutoff entirely
+            cutoff++;
             for(const int& elem: this_x){
                 if(acc.size() == cutoff){
                     return acc;
@@ -330,22 +334,24 @@ void add_sample(string path, string reference, unordered_set<int> mask){
 
 void do_comparisons(vector<tuple<Sample*, Sample*>> comparisons, int cutoff){
     //To be used by Thread to do comparisons in parallel
-    vector<tuple<string, string, int>> distances;
     for(int i=0;i<comparisons.size();i++){
         Sample *s1 = get<0>(comparisons.at(i));
         Sample *s2 = get<1>(comparisons.at(i));
         int dist = s1->dist(s2, cutoff);
-        distances.push_back(make_tuple(s1->uuid, s2->uuid, dist));
+        if(dist > cutoff){
+            //Further than cutoff so ignore
+            continue;
+        }
+
+        //Adding to file separately might be slightly faster (due to mutex), but this involves constructing
+        //In-RAM comparisons which scales poorly as RAM is limiting factor
+        mutex_lock.lock();
+            fstream output("outputs/all.txt", fstream::app);
+            output << s1->uuid << " " << s2->uuid << " " << dist << endl;
+            output.close();
+        mutex_lock.unlock();
     }
 
-    mutex_lock.lock();
-        fstream output("outputs/all.txt", fstream::app);
-        for(int i=0;i<distances.size();i++){
-            tuple<string, string, int> val = distances.at(i);
-            output << get<0>(val) << " " << get<1>(val) << " " << get<2>(val) << endl;
-        }
-        output.close();
-    mutex_lock.unlock();
 }
 
 void compute(int cutoff){
