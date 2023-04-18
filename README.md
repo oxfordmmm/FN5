@@ -11,7 +11,9 @@ Also uses 20 threads where multithreaded currently.
 Using the cryptic set of 15229 samples, on a VM with 64 cores (using max 250 threads):
 
 * Time to parse and save to disk: 2min 33s
-* Time to construct SNP matrix with cutoff 20: 6min 20s
+* Time to construct SNP matrix with cutoff 20: 3min 38s
+
+By not returning anything in cases where the comparison > cutoff, matrix size shows significant decrease, as does time taken
 
 ## Compile
 ```
