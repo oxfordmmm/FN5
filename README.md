@@ -32,4 +32,5 @@ Cutoff is a mandatory parameter (set arbitrarily high to ignore). `12` is a good
 * Clean up arg parsing to be less rigid
 * Proper DB? Currently this is based on the idea that the output file can be parsed as required
 * Ref genome isn't strictly a FASTA file, but that is trivial to update
+* Binary saves rather than ASCII
 

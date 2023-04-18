@@ -35,3 +35,5 @@ fast-snp
 #Saved data
 saves/*
 outputs/*
+
+!**/.gitkeep
