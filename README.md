@@ -5,13 +5,15 @@ A test set of 1286 cryptic samples was used. Once parsed and saved, these can be
 # Note
 Currently argument parsing isn't well implemented (this is proof of concept). In the below examples, ensure that the arguments are exactly this way around.
 
+Also uses 20 threads where multithreaded currently.
+
 ## Compile
 ```
 g++ fast-snp.cpp -std=c++20 -w -pthread -O3 -o fast-snp
 ```
 
 ## Parse some FASTA files
-Parse some FASTA files (single threaded currently) into saves. Pass a path to a line separated file of FASTA paths. Currently only supporting upper case nucleotides. This isn't very fast due to single threaded, but is >=1 order of magnitude faster than Python
+Parse some FASTA files into saves. Pass a path to a line separated file of FASTA paths. Currently only supporting upper case nucleotides. This isn't very fast due to single threaded, but is >=1 order of magnitude faster than Python
 
 ```
 ./fast-snp --bulk_load <path to list>
@@ -26,11 +28,11 @@ Cutoff is a mandatory parameter (set arbitrarily high to ignore). `12` is a good
 
 ## TODO:
 * Replace hard coded values such as save path, ref genome etc
-* Multithread parsing FASTA files
-* Multithread reading saves from disk
+* Multithread reading saves from disk?
 * Lower case FASTA support
 * Clean up arg parsing to be less rigid
 * Proper DB? Currently this is based on the idea that the output file can be parsed as required
 * Ref genome isn't strictly a FASTA file, but that is trivial to update
 * Binary saves rather than ASCII
+* Add support for `-` values as well as `N`
 

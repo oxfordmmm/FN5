@@ -249,7 +249,18 @@ bool check_compute(int nargs, const char* args[]){
     return false;
 }
 
-void bulk_load(string path, string reference, unordered_set<int> mask){
+void load_n(vector<string> paths, string reference, unordered_set<int> mask){
+    //Load all of the samples in `paths`
+    for(const string path: paths){
+        Sample *s = new Sample(path, reference, mask);
+        
+        mutex_lock.lock();
+            save("saves/"+s->uuid, s);
+        mutex_lock.unlock();
+    }
+}
+
+void bulk_load(string path, string reference, unordered_set<int> mask, int thread_count){
     //Take a path to a file specifying which files to load
     //Parse and save, no comparisons
     //Read the file given as an arg, treating each line as a new filepath
@@ -272,20 +283,25 @@ void bulk_load(string path, string reference, unordered_set<int> mask){
     }
     pathsFile.close();
 
-    int totalSave = 0, totalParse = 0;
-    for(int i=0;i<filepaths.size();i++){
-        uint64_t start = sysTime();
-        Sample *s = new Sample(filepaths.at(i), reference, mask);
-        uint64_t end = sysTime();
-        totalParse += end - start;
-
-        start = sysTime();
-        save("saves/"+s->uuid, s);
-        end = sysTime();
-        totalSave += end - start;
+    //Do comparisons with multithreading
+    int chunk_size = filepaths.size() / thread_count;
+    vector<thread> threads;
+    for(int i=0;i<thread_count;i++){
+        vector<string> these(filepaths.begin() + i*chunk_size, filepaths.begin() + i*chunk_size + chunk_size);
+        threads.push_back(thread(load_n, these, reference, mask));
     }
-    cout << "Parsing took ~= " << totalParse/filepaths.size() << endl;
-    cout << "Saving took ~= " << totalSave/filepaths.size() << endl;
+    //Catch ones missed at the end due to rounding (doing on main thread)
+    for(int i=chunk_size*thread_count;i<filepaths.size();i++){
+        Sample *s = new Sample(filepaths.at(i), reference, mask);
+        mutex_lock.lock();
+            save("saves/"+s->uuid, s);
+        mutex_lock.unlock();
+    }
+
+    //Join the threads
+    for(int i=0;i<threads.size();i++){
+        threads.at(i).join();
+    }
 }
 
 void add_sample(string path, string reference, unordered_set<int> mask){
@@ -323,12 +339,12 @@ void do_comparisons(vector<tuple<Sample*, Sample*>> comparisons, int cutoff){
     }
 
     mutex_lock.lock();
-    fstream output("outputs/all.txt", fstream::app);
-    for(int i=0;i<distances.size();i++){
-        tuple<string, string, int> val = distances.at(i);
-        output << get<0>(val) << " " << get<1>(val) << " " << get<2>(val) << endl;
-    }
-    output.close();
+        fstream output("outputs/all.txt", fstream::app);
+        for(int i=0;i<distances.size();i++){
+            tuple<string, string, int> val = distances.at(i);
+            output << get<0>(val) << " " << get<1>(val) << " " << get<2>(val) << endl;
+        }
+        output.close();
     mutex_lock.unlock();
 }
 
@@ -386,8 +402,14 @@ void compute_loaded(int cutoff, vector<Sample*> samples, int thread_count){
         threads.push_back(thread(do_comparisons, these, cutoff));
     }
     //Catch ones missed at the end due to rounding (doing on main thread)
+
     for(int i=chunk_size*thread_count;i<comparisons.size();i++){
-        get<0>(comparisons.at(i))->dist(get<1>(comparisons.at(i)), cutoff);
+        tuple<Sample*, Sample*> val = comparisons.at(i);
+        mutex_lock.lock();
+            fstream output("outputs/all.txt", fstream::app);
+            output << get<0>(val) << " " << get<1>(val) << " " << get<0>(val)->dist(get<1>(val), cutoff) << endl;
+            output.close();
+        mutex_lock.unlock();
     }
 
     //Join the threads
@@ -417,10 +439,11 @@ vector<Sample*> load_saves(){
 }
 
 int main(int nargs, const char* args[]){
+    int thread_count = 20;
     if(check_compute(nargs, args)){
         // compute(stoi(args[2]));
         vector<Sample*> samples = load_saves();
-        compute_loaded(stoi(args[2]), samples, 20);
+        compute_loaded(stoi(args[2]), samples, thread_count);
         return 0;
     }
 
@@ -448,7 +471,7 @@ int main(int nargs, const char* args[]){
     fin2.close();
     
     if(check_bulk_load(nargs, args)){
-        bulk_load(args[2], reference, mask);
+        bulk_load(args[2], reference, mask, thread_count);
     }
 
     if(check_add_sample(nargs, args)){

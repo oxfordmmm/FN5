@@ -35,5 +35,6 @@ fast-snp
 #Saved data
 saves/*
 outputs/*
+cryptic_fastas
 
 !**/.gitkeep
