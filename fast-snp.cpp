@@ -274,7 +274,13 @@ void bulk_load(string path, string reference, unordered_set<int> mask, int threa
     string f;
     while(pathsFile >> noskipws >> ch){
         if(ch == '\n'){
-            filepaths.push_back(f);
+            //Only add if the path found is not empty
+            if(f.find_first_not_of(' ') != string::npos){
+                //Also check for .gitkeep
+                if(f != ".gitkeep"){
+                    filepaths.push_back(f);
+                }
+            }
             f = "";
         }
         else{
@@ -317,10 +323,19 @@ void add_sample(string path, string reference, unordered_set<int> mask){
     unordered_set<string> saves;
     for (const auto & entry : fs::directory_iterator("./saves")){
         string p = entry.path();    
+        //Check for .gitkeep or nothing (we want to ignore this)
+        if(p == "./saves/.gitkeep" || p == ".saves/"){
+            continue;
+        }
+        
         //Remove `.A` etc
         p.pop_back();
         p.pop_back();
-        saves.insert(p);
+
+        //Only add if the path found is not empty
+        if(p.find_first_not_of(' ') != string::npos){
+            saves.insert(p);
+        }
     }
     //Load them and perform comparisons
     for(const string elem: saves){
@@ -360,10 +375,19 @@ void compute(int cutoff){
     unordered_set<string> saves;
     for (const auto & entry : fs::directory_iterator("./saves")){
         string p = entry.path();    
+        //Check for .gitkeep or nothing (we want to ignore this)
+        if(p == "./saves/.gitkeep" || p == ".saves/"){
+            continue;
+        }
+        
         //Remove `.A` etc
         p.pop_back();
         p.pop_back();
-        saves.insert(p);
+
+        //Only add if the path found is not empty
+        if(p.find_first_not_of(' ') != string::npos){
+            saves.insert(p);
+        }
     }
 
     vector<Sample*> samples;
@@ -411,11 +435,14 @@ void compute_loaded(int cutoff, vector<Sample*> samples, int thread_count){
 
     for(int i=chunk_size*thread_count;i<comparisons.size();i++){
         tuple<Sample*, Sample*> val = comparisons.at(i);
-        mutex_lock.lock();
-            fstream output("outputs/all.txt", fstream::app);
-            output << get<0>(val) << " " << get<1>(val) << " " << get<0>(val)->dist(get<1>(val), cutoff) << endl;
-            output.close();
-        mutex_lock.unlock();
+        int dist = get<0>(val)->dist(get<1>(val), cutoff);
+        if(dist <= cutoff){
+            mutex_lock.lock();
+                fstream output("outputs/all.txt", fstream::app);
+                output << get<0>(val)->uuid << " " << get<1>(val)->uuid << " " << dist << endl;
+                output.close();
+            mutex_lock.unlock();
+        }
     }
 
     //Join the threads
@@ -428,11 +455,20 @@ void compute_loaded(int cutoff, vector<Sample*> samples, int thread_count){
 vector<Sample*> load_saves(){
     unordered_set<string> saves;
     for (const auto & entry : fs::directory_iterator("./saves")){
-        string p = entry.path();    
+        string p = entry.path();
+        //Check for .gitkeep or nothing (we want to ignore this)
+        if(p == "./saves/.gitkeep" || p == ".saves/"){
+            continue;
+        }
+        
         //Remove `.A` etc
         p.pop_back();
         p.pop_back();
-        saves.insert(p);
+
+        //Only add if the path found is not empty
+        if(p.find_first_not_of(' ') != string::npos){
+            saves.insert(p);
+        }
     }
 
     vector<Sample*> samples;
