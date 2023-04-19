@@ -36,6 +36,19 @@ Cutoff is a mandatory parameter (set arbitrarily high to ignore). `12` is a good
 ./fast-snp --compute <cutoff>
 ```
 
+## Add a single new file
+From cold (i.e nothing in RAM), add a new sample to the matrix. This works fine for adding single samples, but is **very** slow for building a full matrix from scratch due to reading from disk for every sample
+```
+./fast-snp --add <FASTA path>
+```
+
+## Add a batch of new files
+From cold, add a list of samples to the matrix. As multiple comparisons occur without reading from disk each time, this is close to performance of `--bulk_load` then `--compute`. Takes a path to a line separated file of FASTA paths. Currently uses a 20 SNP threshold
+```
+./fast-snp --add_many <path>
+```
+
+
 ## TODO:
 * Replace hard coded values such as save path, ref genome etc
 * Multithread reading saves from disk? Possibly worse performance??

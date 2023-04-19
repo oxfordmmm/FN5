@@ -37,5 +37,7 @@ saves/*
 outputs/*
 cryptic_fastas
 
+more.txt
+
 !**/.gitkeep
 massif.out*

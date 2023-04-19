@@ -252,6 +252,18 @@ bool check_compute(int nargs, const char* args[]){
     return false;
 }
 
+bool check_add_many(int nargs, const char* args[]){
+    //Checking if this is just asking to recompute all saved samples with a cutoff
+    string flag = "--add_many";
+    for(int i=0;i<nargs;i++){
+        if(args[i] == flag){
+            return true;
+        }
+    }
+    return false;
+}
+
+
 void load_n(vector<string> paths, string reference, unordered_set<int> mask){
     //Load all of the samples in `paths`
     for(const string path: paths){
@@ -263,6 +275,17 @@ void load_n(vector<string> paths, string reference, unordered_set<int> mask){
     }
 }
 
+void load_to_ram(vector<string> paths, string reference, unordered_set<int> mask, vector<Sample*> *acc){
+    //Load all of the samples in `paths` to RAM, saving each 
+    for(const string path: paths){
+        Sample *s = new Sample(path, reference, mask);
+        
+        mutex_lock.lock();
+            acc->push_back(s);
+            save("saves/"+s->uuid, s);
+        mutex_lock.unlock();
+    }
+}
 void bulk_load(string path, string reference, unordered_set<int> mask, int thread_count){
     //Take a path to a file specifying which files to load
     //Parse and save, no comparisons
@@ -537,6 +560,113 @@ vector<Sample*> load_saves(){
     return samples;
 }
 
+void add_many(string path, string reference, unordered_set<int> mask, int cutoff, int thread_count){
+    // Like `add`, but handles adding >1 sample
+    //Should be significantly faster by multithreading
+
+    //Load existing samples
+    vector<Sample*> existing = load_saves();
+
+    //Open the path, and treat each line as a new FASTA file
+    vector<Sample*> others;
+    vector<string> other_paths;
+    char ch;
+    string acc;
+    fstream fin(path, fstream::in);
+    while (fin >> noskipws >> ch) {
+        if(ch == '\n'){
+            if(acc.find_first_not_of(' ') != string::npos){
+                //Also check for .gitkeep
+                if(acc != ".gitkeep"){
+                    other_paths.push_back(acc); 
+                }
+            }
+            acc = "";
+        }
+        else{
+            acc += ch;
+        }
+    }
+    if(acc.find_first_not_of(' ') != string::npos){
+            other_paths.push_back(acc);
+    }    
+    fin.close();
+
+    //Load the samples multithreaded
+    //Do comparisons with multithreading
+    int chunk_size = other_paths.size() / thread_count;
+    vector<thread> threads;
+    for(int i=0;i<thread_count;i++){
+        vector<string> these(other_paths.begin() + i*chunk_size, other_paths.begin() + i*chunk_size + chunk_size);
+        threads.push_back(thread(load_to_ram, these, reference, mask, &others));
+    }
+    //Catch ones missed at the end due to rounding (doing on main thread)
+    for(int i=chunk_size*thread_count;i<other_paths.size();i++){
+        Sample *s = new Sample(other_paths.at(i), reference, mask);
+        mutex_lock.lock();
+            others.push_back(s);
+            save("saves/"+s->uuid, s);
+        mutex_lock.unlock();
+    }
+
+    //Join the threads
+    for(int i=0;i<threads.size();i++){
+        threads.at(i).join();
+    }
+
+    vector<tuple<Sample*, Sample*>> comparisons;
+    //Compare each new one with an each existing comparison
+    for(int i=0;i<existing.size();i++){
+        for(int j=0;j<others.size();j++){
+            comparisons.push_back(make_tuple(existing.at(i), others.at(j)));
+        }
+    }
+    //And compare each new one against other new ones
+    unordered_set<string> seen;
+    for(int i=0;i<others.size();i++){
+        Sample *s1 = others.at(i);
+        seen.insert(s1->uuid);
+        for(int j=0;j<others.size();j++){
+            Sample *s2 = others.at(j);
+            if(seen.contains(s2->uuid)){
+                continue;
+            }
+            else{
+                comparisons.push_back(make_tuple(s1, s2));
+            }
+        }
+    }
+
+    cout << "Adding " << others.size() << " new samples to an existing " << existing.size() <<  " with " << comparisons.size() << " comparisons" << endl;
+
+    //Do comparisons with multithreading
+    chunk_size = comparisons.size() / thread_count;
+    vector<thread> threads2;
+    for(int i=0;i<thread_count;i++){
+        vector<tuple<Sample*, Sample*>> these(comparisons.begin() + i*chunk_size, comparisons.begin() + i*chunk_size + chunk_size);
+        threads2.push_back(thread(do_comparisons, these, cutoff));
+    }
+    //Catch ones missed at the end due to rounding (doing on main thread)
+
+    for(int i=chunk_size*thread_count;i<comparisons.size();i++){
+        tuple<Sample*, Sample*> val = comparisons.at(i);
+        int dist = get<0>(val)->dist(get<1>(val), cutoff);
+        if(dist <= cutoff){
+            mutex_lock.lock();
+                fstream output("outputs/all.txt", fstream::app);
+                output << get<0>(val)->uuid << " " << get<1>(val)->uuid << " " << dist << endl;
+                output.close();
+            mutex_lock.unlock();
+        }
+    }
+
+    //Join the threads
+    for(int i=0;i<threads2.size();i++){
+        threads2.at(i).join();
+    }
+
+}
+
 int main(int nargs, const char* args[]){
     int thread_count = 20;
     if(check_compute(nargs, args)){
@@ -576,6 +706,9 @@ int main(int nargs, const char* args[]){
     if(check_add_sample(nargs, args)){
         add_sample(args[2], reference, mask, 20, thread_count);
     }
-
+    
+    if(check_add_many(nargs, args)){
+        add_many(args[2], reference, mask, 20, thread_count);
+    }
 }
 
