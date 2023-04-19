@@ -60,7 +60,6 @@ class Sample{
                     continue;
                 }
                 if(ch != reference[i]){
-                    // cout << ch << "| |" << reference[i] << " " << (ch == reference[i]) << endl;
                     //We have a difference from reference, so add to appropriate set
                     switch (ch) {
                         case 'A':
@@ -314,39 +313,6 @@ void bulk_load(string path, string reference, unordered_set<int> mask, int threa
     }
 }
 
-void add_sample(string path, string reference, unordered_set<int> mask){
-    //Parse a new sample
-    //Compare it to every saved sample, then save it too
-    Sample *s = new Sample(path, reference, mask);
-
-    //Find all saves
-    unordered_set<string> saves;
-    for (const auto & entry : fs::directory_iterator("./saves")){
-        string p = entry.path();    
-        //Check for .gitkeep or nothing (we want to ignore this)
-        if(p == "./saves/.gitkeep" || p == ".saves/"){
-            continue;
-        }
-        
-        //Remove `.A` etc
-        p.pop_back();
-        p.pop_back();
-
-        //Only add if the path found is not empty
-        if(p.find_first_not_of(' ') != string::npos){
-            saves.insert(p);
-        }
-    }
-    //Load them and perform comparisons
-    for(const string elem: saves){
-        Sample *save = readSample(elem);
-        cout << save->uuid << " " << s->dist(save, 2000000) << endl;
-    }
-
-    //Save the new sample
-    save("saves/"+s->uuid, s);
-}
-
 void save_comparisons(vector<tuple<string, string, int>> comparisons){
     //Save some comparisons to disk in a threadsafe manner
     mutex_lock.lock();
@@ -356,6 +322,83 @@ void save_comparisons(vector<tuple<string, string, int>> comparisons){
         }
         output.close();
     mutex_lock.unlock();
+}
+
+void do_comparisons_from_disk(vector<string> paths, Sample* sample, int cutoff){
+    //To be used by Thread to do comparisons in parallel
+    //Used by `add_sample` for multithreading adding a single sample
+    vector<tuple<string, string, int>> distances;
+    for(int i=0;i<paths.size();i++){
+        Sample *s2 = readSample(paths.at(i));
+        int dist = sample->dist(s2, cutoff);
+        if(dist > cutoff){
+            //Further than cutoff so ignore
+            continue;
+        }
+        distances.push_back(make_tuple(sample->uuid, s2->uuid, dist));
+
+        if(distances.size() == 1000){
+            //We have a fair few comparisons now, so save
+            save_comparisons(distances);
+            //Clear for continuing
+            distances = {};
+
+        }
+    }
+    //And save the last few (if existing)
+    save_comparisons(distances);
+}
+
+void add_sample(string path, string reference, unordered_set<int> mask, int cutoff, int thread_count){
+    //Parse a new sample
+    //Compare it to every saved sample, then save it too
+    Sample *s = new Sample(path, reference, mask);
+
+    //Find all saves
+    unordered_set<string> saves_;
+    for (const auto & entry : fs::directory_iterator("./saves")){
+        string p = entry.path();    
+        //Check for .gitkeep or nothing (we want to ignore this)
+        if(p == "./saves/.gitkeep" || p == "./saves"){
+            continue;
+        }
+        
+        //Remove `.A` etc
+        p.pop_back();
+        p.pop_back();
+
+        //Only add if the path found is not empty
+        if(p.find_first_not_of(' ') != string::npos){
+            saves_.insert(p);
+        }
+    }
+    //Load them and perform comparisons
+    vector<string> saves;
+    for(const string elem: saves_){
+        saves.push_back(elem);
+    }
+
+    //Do comparisons with multithreading
+    int chunk_size = saves.size() / thread_count;
+    vector<thread> threads;
+    for(int i=0;i<thread_count;i++){
+        vector<string> these(saves.begin() + i*chunk_size, saves.begin() + i*chunk_size + chunk_size);
+        threads.push_back(thread(do_comparisons_from_disk, these, s, cutoff));
+    }
+    //Catch ones missed at the end due to rounding (doing on main thread)
+    vector<string> remaining;
+    for(int i=chunk_size*thread_count;i<saves.size();i++){
+        remaining.push_back(saves.at(i));
+    }
+    do_comparisons_from_disk(remaining, s, cutoff);
+
+    //Join the threads
+    for(int i=0;i<threads.size();i++){
+        threads.at(i).join();
+    }
+
+    //Save the new sample
+    save("saves/"+s->uuid, s);
 }
 
 void do_comparisons(vector<tuple<Sample*, Sample*>> comparisons, int cutoff){
@@ -378,13 +421,6 @@ void do_comparisons(vector<tuple<Sample*, Sample*>> comparisons, int cutoff){
             distances = {};
 
         }
-        //Adding to file separately might be slightly faster (due to mutex), but this involves constructing
-        //In-RAM comparisons which scales poorly as RAM is limiting factor
-        // mutex_lock.lock();
-        //     fstream output("outputs/all.txt", fstream::app);
-        //     output << s1->uuid << " " << s2->uuid << " " << dist << endl;
-        //     output.close();
-        // mutex_lock.unlock();
     }
     //And save the last few (if existing)
     save_comparisons(distances);
@@ -397,7 +433,7 @@ void compute(int cutoff){
     for (const auto & entry : fs::directory_iterator("./saves")){
         string p = entry.path();    
         //Check for .gitkeep or nothing (we want to ignore this)
-        if(p == "./saves/.gitkeep" || p == ".saves/"){
+        if(p == "./saves/.gitkeep" || p == "./saves"){
             continue;
         }
         
@@ -478,7 +514,7 @@ vector<Sample*> load_saves(){
     for (const auto & entry : fs::directory_iterator("./saves")){
         string p = entry.path();
         //Check for .gitkeep or nothing (we want to ignore this)
-        if(p == "./saves/.gitkeep" || p == ".saves/"){
+        if(p == "./saves/.gitkeep" || p == "./saves"){
             continue;
         }
         
@@ -538,7 +574,7 @@ int main(int nargs, const char* args[]){
     }
 
     if(check_add_sample(nargs, args)){
-        add_sample(args[2], reference, mask);
+        add_sample(args[2], reference, mask, 20, thread_count);
     }
 
 }

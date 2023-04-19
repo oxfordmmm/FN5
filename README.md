@@ -13,7 +13,7 @@ Using the cryptic set of 15229 samples, on a VM with 64 cores (using max 250 thr
 * Time to parse and save to disk: 2min 33s
 * Time to construct SNP matrix with cutoff 12: 3min 38s
 * Time to construct SNP matrix with cutoff 20: 3min 38s
-* Time to construct SNP matrix without cutoff (90000): ---
+* Time to construct SNP matrix without cutoff (90000): 9min 22s
 
 By not returning anything in cases where the comparison > cutoff, matrix size shows significant decrease, as does time taken
 
