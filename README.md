@@ -48,6 +48,29 @@ From cold, add a list of samples to the matrix. As multiple comparisons occur wi
 ./fast-snp --add_many <path>
 ```
 
+## Querying data
+Currently, pairwise distances are dumped to a plaintext file consisting of `<guid1> <guid2> <dist>`. This works fine for cases in which we actually only care about distances within cutoff. However, if we remove the cutoff, this file grows to be dangerously large, and **very** slow to query (1.5min+ with 15226 samples)
+
+### Simple queries
+Based on the data in `outputs/all.txt`, find samples which match. Note that this is reliant on distances being <= cutoff defined when this was populated
+```
+python3 query.py --guid <guid>
+```
+
+Optinally add a secondard cutoff. Useful for if you populated `outputs/all.txt` with a cutoff of say 100 but want to query under 20 for example.
+```
+python3 query.py --guid <guid> --snp <cutoff>
+```
+It is not wise to use this on large datasets without a cutoff in place though due to time and space complexity. Weirdly a simple C++ implementation is significantly slower...
+
+
+### More complex
+In cases where we are interested in finding arbitrarily high cutoffs, or just want the nearest neighbour of a single sample (even outside of cutoff distance), it is significantly quicker to just recompute this. This will find all neighbours <= `<cutoff>` away, and if there are none in this range, return the nearest one.
+```
+./fast-snp --compare_row <path to sample FASTA> <cutoff>
+```
+Note that this is significantly slower than querying the precomputed data in cases where a cutoff is used and we don't care about nearest past this
+
 
 ## TODO:
 * Replace hard coded values such as save path, ref genome etc

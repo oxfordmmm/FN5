@@ -263,6 +263,17 @@ bool check_add_many(int nargs, const char* args[]){
     return false;
 }
 
+bool check_compare_row(int nargs, const char* args[]){
+    //Checking if this is just asking for comparisons
+    string flag = "--compare_row";
+    for(int i=0;i<nargs;i++){
+        if(args[i] == flag){
+            return true;
+        }
+    }
+    return false;
+}
+
 
 void load_n(vector<string> paths, string reference, unordered_set<int> mask){
     //Load all of the samples in `paths`
@@ -336,6 +347,33 @@ void bulk_load(string path, string reference, unordered_set<int> mask, int threa
     }
 }
 
+vector<Sample*> load_saves(){
+    unordered_set<string> saves;
+    for (const auto & entry : fs::directory_iterator("./saves")){
+        string p = entry.path();
+        //Check for .gitkeep or nothing (we want to ignore this)
+        if(p == "./saves/.gitkeep" || p == "./saves"){
+            continue;
+        }
+        
+        //Remove `.A` etc
+        p.pop_back();
+        p.pop_back();
+
+        //Only add if the path found is not empty
+        if(p.find_first_not_of(' ') != string::npos){
+            saves.insert(p);
+        }
+    }
+
+    vector<Sample*> samples;
+    for(const string elem: saves){
+        Sample *s = readSample(elem);
+        samples.push_back(s);
+    }
+
+    return samples;
+}
 void save_comparisons(vector<tuple<string, string, int>> comparisons){
     //Save some comparisons to disk in a threadsafe manner
     mutex_lock.lock();
@@ -370,6 +408,37 @@ void do_comparisons_from_disk(vector<string> paths, Sample* sample, int cutoff){
     }
     //And save the last few (if existing)
     save_comparisons(distances);
+}
+
+void compare_row(string path, string reference, unordered_set<int> mask, int cutoff){
+    //Very similar to add_sample, but instead of saving to disk, print to stdout
+    //This is because of how difficult it is to query the size of file created without cutoff
+    Sample *s = new Sample(path, reference, mask);
+
+    vector<Sample*> samples = load_saves();
+    int closest_dist = 99999999999;
+    string closest_uuid = "";
+    bool found_within_cutoff = false;
+    for(int i=0;i<samples.size();i++){
+        if(samples.at(i)->uuid == s->uuid){
+            //Same sample
+            continue;
+        }
+        int dist = s->dist(samples.at(i), 99999999);
+        if(dist <= closest_dist){
+            closest_dist = dist;
+            closest_uuid = samples.at(i)->uuid;
+        }
+        if(dist > cutoff){
+            continue;
+        }
+        found_within_cutoff = true;
+        cout << samples.at(i)->uuid << " " << dist << endl;
+    }
+    if(!found_within_cutoff){
+        //Nothing found within the cutoff, so output nearest
+        cout << "Nearest: " << closest_uuid << " " << closest_dist << endl;
+    }
 }
 
 void add_sample(string path, string reference, unordered_set<int> mask, int cutoff, int thread_count){
@@ -532,34 +601,6 @@ void compute_loaded(int cutoff, vector<Sample*> samples, int thread_count){
 
 }
 
-vector<Sample*> load_saves(){
-    unordered_set<string> saves;
-    for (const auto & entry : fs::directory_iterator("./saves")){
-        string p = entry.path();
-        //Check for .gitkeep or nothing (we want to ignore this)
-        if(p == "./saves/.gitkeep" || p == "./saves"){
-            continue;
-        }
-        
-        //Remove `.A` etc
-        p.pop_back();
-        p.pop_back();
-
-        //Only add if the path found is not empty
-        if(p.find_first_not_of(' ') != string::npos){
-            saves.insert(p);
-        }
-    }
-
-    vector<Sample*> samples;
-    for(const string elem: saves){
-        Sample *s = readSample(elem);
-        samples.push_back(s);
-    }
-
-    return samples;
-}
-
 void add_many(string path, string reference, unordered_set<int> mask, int cutoff, int thread_count){
     // Like `add`, but handles adding >1 sample
     //Should be significantly faster by multithreading
@@ -664,7 +705,6 @@ void add_many(string path, string reference, unordered_set<int> mask, int cutoff
     for(int i=0;i<threads2.size();i++){
         threads2.at(i).join();
     }
-
 }
 
 int main(int nargs, const char* args[]){
@@ -709,6 +749,10 @@ int main(int nargs, const char* args[]){
     
     if(check_add_many(nargs, args)){
         add_many(args[2], reference, mask, 20, thread_count);
+    }
+
+    if(check_compare_row(nargs, args)){
+        compare_row(args[2], reference, mask, stoi(args[3]));
     }
 }
 

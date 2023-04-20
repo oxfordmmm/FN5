@@ -31,7 +31,6 @@
 *.out
 *.app
 fast-snp
-query
 
 #Saved data
 saves/*
