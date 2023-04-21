@@ -529,9 +529,11 @@ int main(int nargs, const char* args_[]){
         cutoff = stoi(args.at("--cutoff"));
     }
 
+    //Check for compute first as it doesn't need reference
     if(check_flag(args, "--compute")){
         vector<Sample*> samples = load_saves();
         compute_loaded(cutoff, samples);
+        return 0;
     }
 
     string reference = load_reference("ref.upper.fasta");
