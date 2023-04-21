@@ -28,7 +28,7 @@ By using a SNP cutoff, the amount of data produced becomes significantly more tr
 
 ## Compile
 ```
-g++ fast-snp.cpp -std=c++20 -w -pthread -O3 -o fast-snp
+g++ src/fast-snp.cpp -Isrc -std=c++20 -w -pthread -O3 -o fast-snp
 ```
 
 ## Parse some FASTA files
