@@ -1,6 +1,8 @@
 #include "sample.cpp"
 #include "argparse.cpp"
 #include <mutex>
+#include <tuple>
+#include <unordered_set>
 
 using namespace std;
 namespace fs = std::filesystem;
@@ -255,29 +257,113 @@ void add_sample(string path, string reference, unordered_set<int> mask, int cuto
 }
 
 /**
+* @brief Check if a UUID exists in the closet map
+*
+* @param closest Map of UUID -> (UUID, dist)
+* @param uuid UUID to look for
+*/
+bool check_exists(map<string,tuple<string,int>> closest, string uuid){
+    for (auto const& [key, val] : closest){
+        if(key == uuid){
+            return true;
+        }
+    }
+    return false;
+}
+
+/**
+* @brief Print the comparisons to stdout in a threadsafe manner
+*
+* @param distances List of comparisons
+*/
+void print_distances(vector<tuple<string, string, int>> distances){
+    mutex_lock.lock();
+        for(int i=0;i<distances.size();i++){
+            cout << get<0>(distances.at(i)) << " " << get<1>(distances.at(i)) << " " << get<2>(distances.at(i)) << endl;
+        }
+    mutex_lock.unlock();
+}
+
+/**
 * @brief Find distances between given sample pairs, printing results to stdout
 *
 * @param comparisons Pairs of samples to find distances between
 * @param cutoff SNP cutoff
+* @param closest Mapping of UUID -> (closest UUID, distance)
+* @param found_neighbour Set of UUIDs for samples which have neighbours within cutoff
 */
-void do_comparisons(vector<tuple<Sample*, Sample*>> comparisons, int cutoff){
+void do_comparisons(vector<tuple<Sample*, Sample*>> comparisons, int cutoff, map<string, tuple<string, int>> *closest_, unordered_set<string> *found_neighbour_){
     //To be used by Thread to do comparisons in parallel
+    /**
+    In order to avoid storing all comparisons in memory and querying this to find closest neighbour past threshold,
+    the maps are used accross threads to track if a sample has a nearest neighbour.
+    
+    We use an internal version of these during processing to avoid locking the thread so consistently
+    */
+    map<string, tuple<string, int>> closest;
+    unordered_set<string> found_neighbour;
+    vector<tuple<string, string, int>> distances;
     for(int i=0;i<comparisons.size();i++){
         Sample *s1 = get<0>(comparisons.at(i));
         Sample *s2 = get<1>(comparisons.at(i));
         if(s1->uuid == s2->uuid){
             continue;
         }
-        int dist = s1->dist(s2, cutoff);
+        int dist = s1->dist(s2, 999999999);
         if(dist > cutoff){
-            //Further than cutoff so ignore
+            //Further than cutoff so don't immediately report, just update maps
+            if(check_exists(closest, s1->uuid)){
+                tuple<string, int> c = closest.at(s1->uuid);
+                if(dist < get<1>(c)){
+                    closest.insert({s1->uuid, make_tuple(s2->uuid, dist)});
+                }
+            }
+            else{
+                closest.insert({s1->uuid, make_tuple(s2->uuid, dist)});
+            }
+
+            if(check_exists(closest, s2->uuid)){
+                tuple<string, int> c = closest.at(s2->uuid);
+                if(dist < get<1>(c)){
+                    closest.insert({s2->uuid, make_tuple(s1->uuid, dist)});
+                }
+            }
+            else{
+                closest.insert({s2->uuid, make_tuple(s1->uuid, dist)});
+            }
             continue;
         }
         
-        mutex_lock.lock();
-            cout << s1->uuid << " " << s2->uuid << " " << dist << endl;
-        mutex_lock.unlock();
+        distances.push_back(make_tuple(s1->uuid, s2->uuid, dist));
+
+        if(distances.size() == 1000){
+            print_distances(distances);
+            distances = {};
+        }
+        found_neighbour.insert(s1->uuid);
+        found_neighbour.insert(s2->uuid);
     }
+    print_distances(distances);
+
+    //Now add the closest things to the real versions
+    mutex_lock.lock();
+        for (auto const& [key, val] : closest){
+            if(check_exists(*closest_, key)){
+                tuple<string, int> c = closest.at(key);
+                if(get<1>(val) < get<1>(c)){
+                    //This one's closer
+                    closest_->insert({key, val});
+                }
+            }
+            else{
+                //Not already there so add
+                closest_->insert({key, val});
+            }
+        }
+        for(const string elem: found_neighbour){
+            found_neighbour_->insert(elem);
+        }
+    mutex_lock.unlock();
 }
 
 /**
@@ -367,30 +453,43 @@ void add_many(string path, string reference, unordered_set<int> mask, int cutoff
 
     cout << "Adding " << others.size() << " new samples to an existing " << existing.size() <<  " with " << comparisons.size() << " comparisons" << endl;
 
+    map<string, tuple<string, int>> closest;
+    unordered_set<string> have_neighbours;
     //Do comparisons with multithreading
     chunk_size = comparisons.size() / thread_count;
     vector<thread> threads2;
     for(int i=0;i<thread_count;i++){
         vector<tuple<Sample*, Sample*>> these(comparisons.begin() + i*chunk_size, comparisons.begin() + i*chunk_size + chunk_size);
-        threads2.push_back(thread(do_comparisons, these, cutoff));
+        threads2.push_back(thread(do_comparisons, these, cutoff, &closest, &have_neighbours));
     }
     //Catch ones missed at the end due to rounding (doing on main thread)
-
+    vector<tuple<Sample*, Sample*>> missed;
     for(int i=chunk_size*thread_count;i<comparisons.size();i++){
-        tuple<Sample*, Sample*> val = comparisons.at(i);
-        if(get<0>(val)->uuid == get<1>(val)->uuid){
-        }
-        int dist = get<0>(val)->dist(get<1>(val), cutoff);
-        if(dist <= cutoff){
-            mutex_lock.lock();
-                cout << get<0>(val)->uuid << " " << get<1>(val)->uuid << " " << dist << endl;
-            mutex_lock.unlock();
-        }
+        missed.push_back(comparisons.at(i));
     }
+    do_comparisons(missed, cutoff, &closest, &have_neighbours);
 
     //Join the threads
     for(int i=0;i<threads2.size();i++){
         threads2.at(i).join();
+    }
+
+    //Check for samples which have no neighbours
+    //We only care about cases which refer to the new samples
+    //So start by getting the new samples' uuids
+    unordered_set<string> uuids;
+    for(int i=0;i<others.size();i++){
+        uuids.insert(others.at(i)->uuid);
+    }
+    //Now print the new stuff
+    for (auto const& [key, val] : closest){
+        if(have_neighbours.contains(key)){
+            //There is actually a neighbour, so skip
+            continue;
+        }
+        if(uuids.contains(key)){
+            cout << key << " " << get<0>(val) << " " << get<1>(val) << endl;
+        }
     }
 }
 
@@ -470,32 +569,35 @@ void compute_loaded(int cutoff, vector<Sample*> samples){
     fstream output(output_file, fstream::out);
     output.close();
 
+    map<string, tuple<string, int>> closest;
+    unordered_set<string> have_neighbours;
     //Do comparisons with multithreading
     int chunk_size = comparisons.size() / thread_count;
     vector<thread> threads;
     for(int i=0;i<thread_count;i++){
         vector<tuple<Sample*, Sample*>> these(comparisons.begin() + i*chunk_size, comparisons.begin() + i*chunk_size + chunk_size);
-        threads.push_back(thread(do_comparisons, these, cutoff));
+        threads.push_back(thread(do_comparisons, these, cutoff, &closest, &have_neighbours));
     }
     //Catch ones missed at the end due to rounding (doing on main thread)
-
+    vector<tuple<Sample*, Sample*>> missed;
     for(int i=chunk_size*thread_count;i<comparisons.size();i++){
-        tuple<Sample*, Sample*> val = comparisons.at(i);
-        int dist = get<0>(val)->dist(get<1>(val), cutoff);
-        if(dist <= cutoff){
-            mutex_lock.lock();
-                // fstream output(output_file, fstream::app);
-                cout << get<0>(val)->uuid << " " << get<1>(val)->uuid << " " << dist << endl;
-                // output.close();
-            mutex_lock.unlock();
-        }
+        missed.push_back(comparisons.at(i));
     }
+    do_comparisons(missed, cutoff, &closest, &have_neighbours);
 
     //Join the threads
     for(int i=0;i<threads.size();i++){
         threads.at(i).join();
     }
 
+    //Check for samples which have no neighbours
+    for (auto const& [key, val] : closest){
+        if(have_neighbours.contains(key)){
+            //There is actually a neighbour, so skip
+            continue;
+        }
+        cout << key << " " << get<0>(val) << " " << get<1>(val) << endl;
+    }
 }
 
 int main(int nargs, const char* args_[]){
@@ -532,7 +634,7 @@ int main(int nargs, const char* args_[]){
     //Check for compute first as it doesn't need reference
     if(check_flag(args, "--compute")){
         vector<Sample*> samples = load_saves();
-        compute_loaded(cutoff, samples);
+        compute_loaded(stoi(args.at("--compute")), samples);
         return 0;
     }
 
