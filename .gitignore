@@ -39,6 +39,9 @@ outputs/*
 cryptic_fastas
 *.tar.gz
 
+#Build data
+build/*
+
 #Keep the env file out
 .env
 
