@@ -6,7 +6,7 @@ source .env
 #Pull the existing saves from a bucket here
 #   <bucket> --> saves 
 #Get the latest saves from the bucket
-latest=$(curl -SsL $bucket | jq -r '.objects[].name' | sort | head -n 1)
+latest=$(curl -SsL $bucket | jq -r '.objects[].name' | sort | tail -n 1)
 echo Using $latest
 curl -SsL $bucket/$latest > $latest
 tar xzf $latest
