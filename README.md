@@ -14,8 +14,15 @@ Using the cryptic set of 15229 samples, on a VM with 64 cores (using max 250 thr
 * Time to construct SNP matrix with cutoff 12: 3min 38s
 * Time to construct SNP matrix with cutoff 20: 3min 38s
 * Time to construct SNP matrix without cutoff (90000): 9min 22s
+* Size of saves on disk: 305M. FASTA files ~65G
 
-By not returning anything in cases where the comparison > cutoff, matrix size shows significant decrease, as does time taken
+By not returning anything in cases where the comparison > cutoff, matrix size shows significant decrease, as does time taken.
+
+From cold (i.e nothing in RAM) and with a single thread, pulling out a row of comparisons on this much data can be performed in ~10.5s - meaning that this is fast enough that we could containerise this to run as a service. This should be able to circumvent the need to have an instance running constantly. Also, the time taken for this should just scale linearly (we are doing N comparisons).
+It also utilises < 0.5GiB RAM for this...
+Most of this time taken is also just for loading the saves (this takes somewhere in the region of 7-8s), so extending to add samples in a batch like this would be slow, but could be containerised and orchestrated. This should allow ~1min turn around for small batches
+
+By using a SNP cutoff, the amount of data produced becomes significantly more tractable - cuttof of 20 reduces the comparison matrix for the cryptic samples from ~14GB (>100,000,000 comparisons) to ~200MB
 
 ## Compile
 ```
@@ -69,8 +76,20 @@ In cases where we are interested in finding arbitrarily high cutoffs, or just wa
 ```
 ./fast-snp --compare_row <path to sample FASTA> <cutoff>
 ```
-Note that this is significantly slower than querying the precomputed data in cases where a cutoff is used and we don't care about nearest past this
+Note that this is significantly slower than querying the precomputed data in cases where a cutoff is used and we don't care about nearest past this. This is also entirely on a single thread, so could be used within a container or similar...
+With 15226 samples, it can return in ~10.5s
 
+## Nextflow-like
+Testing some Nextflow-like behaviour, including fetching from and pushing to buckets. Currently using cutoff of 20
+1. Create a file called `.env` at the top level of this directory
+2. Populate with
+```
+bucket="<bucket URl here>"
+input_paths="<path to a line separated file of FASTA paths to add>"
+```
+3. Run `./pipeline-script.sh`
+
+Results will be populated to `comparisons.txt` currently, but this could be parsed into a DB or similar
 
 ## TODO:
 * Replace hard coded values such as save path, ref genome etc

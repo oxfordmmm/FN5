@@ -416,7 +416,8 @@ void compare_row(string path, string reference, unordered_set<int> mask, int cut
     Sample *s = new Sample(path, reference, mask);
 
     vector<Sample*> samples = load_saves();
-    int closest_dist = 99999999999;
+    cout << "Comparing against " << samples.size() << endl;
+    int closest_dist = 999999999;
     string closest_uuid = "";
     bool found_within_cutoff = false;
     for(int i=0;i<samples.size();i++){
@@ -433,12 +434,15 @@ void compare_row(string path, string reference, unordered_set<int> mask, int cut
             continue;
         }
         found_within_cutoff = true;
-        cout << samples.at(i)->uuid << " " << dist << endl;
+        cout << s->uuid << " " << samples.at(i)->uuid << " " << dist << endl;
     }
     if(!found_within_cutoff){
         //Nothing found within the cutoff, so output nearest
         cout << "Nearest: " << closest_uuid << " " << closest_dist << endl;
     }
+
+    //Save the sample in a new dir
+    save("saves/"+s->uuid, s);
 }
 
 void add_sample(string path, string reference, unordered_set<int> mask, int cutoff, int thread_count){
@@ -516,6 +520,26 @@ void do_comparisons(vector<tuple<Sample*, Sample*>> comparisons, int cutoff){
     }
     //And save the last few (if existing)
     save_comparisons(distances);
+}
+
+void do_comparisons_test(vector<tuple<Sample*, Sample*>> comparisons, int cutoff){
+    //To be used by Thread to do comparisons in parallel
+    for(int i=0;i<comparisons.size();i++){
+        Sample *s1 = get<0>(comparisons.at(i));
+        Sample *s2 = get<1>(comparisons.at(i));
+        if(s1->uuid == s2->uuid){
+            continue;
+        }
+        int dist = s1->dist(s2, cutoff);
+        if(dist > cutoff){
+            //Further than cutoff so ignore
+            continue;
+        }
+        
+        mutex_lock.lock();
+            cout << s1->uuid << " " << s2->uuid << " " << dist << endl;
+        mutex_lock.unlock();
+    }
 }
 
 void compute(int cutoff){
@@ -685,18 +709,21 @@ void add_many(string path, string reference, unordered_set<int> mask, int cutoff
     vector<thread> threads2;
     for(int i=0;i<thread_count;i++){
         vector<tuple<Sample*, Sample*>> these(comparisons.begin() + i*chunk_size, comparisons.begin() + i*chunk_size + chunk_size);
-        threads2.push_back(thread(do_comparisons, these, cutoff));
+        threads2.push_back(thread(do_comparisons_test, these, cutoff));
     }
     //Catch ones missed at the end due to rounding (doing on main thread)
 
     for(int i=chunk_size*thread_count;i<comparisons.size();i++){
         tuple<Sample*, Sample*> val = comparisons.at(i);
+        if(get<0>(val)->uuid == get<1>(val)->uuid){
+        }
         int dist = get<0>(val)->dist(get<1>(val), cutoff);
         if(dist <= cutoff){
             mutex_lock.lock();
-                fstream output("outputs/all.txt", fstream::app);
-                output << get<0>(val)->uuid << " " << get<1>(val)->uuid << " " << dist << endl;
-                output.close();
+                cout << get<0>(val)->uuid << " " << get<1>(val)->uuid << " " << dist << endl;
+                // fstream output("outputs/all.txt", fstream::app);
+                // output << get<0>(val)->uuid << " " << get<1>(val)->uuid << " " << dist << endl;
+                // output.close();
             mutex_lock.unlock();
         }
     }
@@ -748,7 +775,7 @@ int main(int nargs, const char* args[]){
     }
     
     if(check_add_many(nargs, args)){
-        add_many(args[2], reference, mask, 20, thread_count);
+        add_many(args[2], reference, mask, stoi(args[3]), thread_count);
     }
 
     if(check_compare_row(nargs, args)){

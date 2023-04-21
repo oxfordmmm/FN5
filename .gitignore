@@ -34,10 +34,17 @@ fast-snp
 
 #Saved data
 saves/*
+new_saves/*
 outputs/*
 cryptic_fastas
+*.tar.gz
 
-more.txt
+#Keep the env file out
+.env
+
+*.txt
 
 !**/.gitkeep
-massif.out*
+*massif*
+test/*
+.pyetst_cache
