@@ -162,6 +162,22 @@ void save_comparisons(vector<tuple<string, string, int>> comparisons){
     mutex_lock.unlock();
 }
 
+/**
+* @brief Print a list of comparisons to stdout. Threadsafe
+*
+* @param comparisons List of precomputed comparisons. Tuples of (guid1, guid2, dist)
+*/
+void print_comparisons(vector<tuple<string, string, int>> comparisons){
+    //Save some comparisons to disk in a threadsafe manner
+    mutex_lock.lock();
+        fstream output(output_file, fstream::app);
+        for(const tuple<string, string, int> elem: comparisons){
+            output << get<0>(elem) << " " << get<1>(elem) << " " << get<2>(elem) << endl;
+        }
+        output.close();
+    mutex_lock.unlock();
+}
+
 
 /**
 * @brief Given a sample and a list of save paths, iteratively load a save & find the distance
@@ -278,11 +294,11 @@ void do_comparisons(vector<tuple<Sample*, Sample*>> comparisons, int cutoff){
         
         distances.push_back(make_tuple(s1->uuid, s2->uuid, dist));
         if(distances.size() == 1000){
-            save_comparisons(distances);
+            print_comparisons(distances);
             distances = {};
         }
     }
-    save_comparisons(distances);
+    print_comparisons(distances);
 }
 
 /**
@@ -491,7 +507,7 @@ void compute_loaded(int cutoff, vector<Sample*> samples){
             distances.push_back(make_tuple(get<0>(val)->uuid, get<1>(val)->uuid, dist));
         }
     }
-    save_comparisons(distances);
+    print_comparisons(distances);
 
     //Join the threads
     for(int i=0;i<threads.size();i++){
