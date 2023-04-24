@@ -1,10 +1,12 @@
 # fast-snp
-(Yes, I know this name has already been used for other projects. It isn't permanent)
+(I know this name has already been used for other projects. It isn't intended to be permanent)
 
 SNP matrix generation with caching to disk to allow fast reloading.
 A test set of 1286 cryptic samples was used. Once parsed and saved, these can be read into memory (on a single thread) in 0.5s - scaling linearly
 
 Defaults to using 20 threads where multithreading is used. This can be updated through use of the `--threads` flag
+
+Saves default to `./saves`. This can be updated through use of the `--saves_dir` flag
 
 # Load testing
 Using the cryptic set of 15229 samples, on a VM with 64 cores (using max 250 threads):
@@ -36,7 +38,7 @@ Parse some FASTA files into saves. Pass a path to a line separated file of FASTA
 ```
 
 ## Build a SNP matrix
-Perform pairwise comparisons of all samples which have been saved already. Dumps to a txt file of format `<guid1> <guid2> <dist>`. Current path to this is `outputs/all.txt`
+Perform pairwise comparisons of all samples which have been saved already. Dumps to a txt file of format `<guid1> <guid2> <dist>`. Current path to this is `outputs/all.txt`. This can be changed with the `--output_file` flag
 Cutoff is a mandatory parameter (set arbitrarily high to ignore). `12` is a good value for speed and use, but for several use cases, this cutoff may not be helpful
 ```
 ./fast-snp --compute <cutoff>
@@ -53,6 +55,9 @@ From cold, add a list of samples to the matrix. As multiple comparisons occur wi
 ```
 ./fast-snp --add_many <path>
 ```
+
+## Set SNP cutoff
+In most cases, a cutoff of 20 makes sense, but to change this, use the `--cutoff` flag. To have no cutoff, just set arbirarily high
 
 ## Querying data
 Currently, pairwise distances are dumped to a plaintext file consisting of `<guid1> <guid2> <dist>`. This works fine for cases in which we actually only care about distances within cutoff. However, if we remove the cutoff, this file grows to be dangerously large, and **very** slow to query (1.5min+ with 15226 samples)
@@ -71,12 +76,17 @@ It is not wise to use this on large datasets without a cutoff in place though du
 
 
 ### More complex
-In cases where we are interested in finding arbitrarily high cutoffs, or just want the nearest neighbour of a single sample (even outside of cutoff distance), it is significantly quicker to just recompute this. This will find all neighbours <= `<cutoff>` away, and if there are none in this range, return the nearest one.
+In cases where we are interested in finding arbitrarily high cutoffs, or just want the nearest neighbour of a single sample (even outside of cutoff distance), it is significantly quicker to just recompute this. This will find all neighbours <= 20 away, and if there are none in this range, return the nearest one. The 
 ```
-./fast-snp --compare_row <path to sample FASTA> <cutoff>
+./fast-snp --compare_row <path to sample FASTA>
 ```
-Note that this is significantly slower than querying the precomputed data in cases where a cutoff is used and we don't care about nearest past this. This is also entirely on a single thread, so could be used within a container or similar...
+Note that this is significantly slower than querying the precomputed data in cases where a cutoff is used and we don't care about nearest past this. This is also single threaded, so could be used within a container or similar...
 With 15226 samples, it can return in ~10.5s
+
+If comparing >1 sample, it is more efficient to use this version:
+```
+./fast-snp --add_many <path to line separated file of FASTA paths>
+```
 
 ## Nextflow-like
 Testing some Nextflow-like behaviour, including fetching from and pushing to buckets. Currently using cutoff of 20

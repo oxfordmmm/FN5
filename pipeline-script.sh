@@ -14,7 +14,7 @@ tar xzf $latest
 
 
 #Get comparisons with the new ones
-./fast-snp --add_many $input_paths 20 > comparisons.txt
+./fast-snp --add_many $input_paths --cutoff 20 > comparisons.txt
 #<><><><><><>
 
 #Push new saves to a bucket here
