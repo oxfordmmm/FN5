@@ -170,11 +170,9 @@ void save_comparisons(vector<tuple<string, string, int>> comparisons){
 void print_comparisons(vector<tuple<string, string, int>> comparisons){
     //Save some comparisons to disk in a threadsafe manner
     mutex_lock.lock();
-        fstream output(output_file, fstream::app);
         for(const tuple<string, string, int> elem: comparisons){
-            output << get<0>(elem) << " " << get<1>(elem) << " " << get<2>(elem) << endl;
+            cout << get<0>(elem) << " " << get<1>(elem) << " " << get<2>(elem) << endl;
         }
-        output.close();
     mutex_lock.unlock();
 }
 
