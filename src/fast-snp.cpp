@@ -1,6 +1,7 @@
 #include "sample.cpp"
 #include "argparse.cpp"
 #include <mutex>
+#include <tuple>
 
 using namespace std;
 namespace fs = std::filesystem;
@@ -262,6 +263,7 @@ void add_sample(string path, string reference, unordered_set<int> mask, int cuto
 */
 void do_comparisons(vector<tuple<Sample*, Sample*>> comparisons, int cutoff){
     //To be used by Thread to do comparisons in parallel
+    vector<tuple<string, string, int>> distances;
     for(int i=0;i<comparisons.size();i++){
         Sample *s1 = get<0>(comparisons.at(i));
         Sample *s2 = get<1>(comparisons.at(i));
@@ -274,10 +276,13 @@ void do_comparisons(vector<tuple<Sample*, Sample*>> comparisons, int cutoff){
             continue;
         }
         
-        mutex_lock.lock();
-            cout << s1->uuid << " " << s2->uuid << " " << dist << endl;
-        mutex_lock.unlock();
+        distances.push_back(make_tuple(s1->uuid, s2->uuid, dist));
+        if(distances.size() == 1000){
+            save_comparisons(distances);
+            distances = {};
+        }
     }
+    save_comparisons(distances);
 }
 
 /**
@@ -478,18 +483,15 @@ void compute_loaded(int cutoff, vector<Sample*> samples){
         threads.push_back(thread(do_comparisons, these, cutoff));
     }
     //Catch ones missed at the end due to rounding (doing on main thread)
-
+    vector<tuple<string, string, int>> distances;
     for(int i=chunk_size*thread_count;i<comparisons.size();i++){
         tuple<Sample*, Sample*> val = comparisons.at(i);
         int dist = get<0>(val)->dist(get<1>(val), cutoff);
         if(dist <= cutoff){
-            mutex_lock.lock();
-                // fstream output(output_file, fstream::app);
-                cout << get<0>(val)->uuid << " " << get<1>(val)->uuid << " " << dist << endl;
-                // output.close();
-            mutex_lock.unlock();
+            distances.push_back(make_tuple(get<0>(val)->uuid, get<1>(val)->uuid, dist));
         }
     }
+    save_comparisons(distances);
 
     //Join the threads
     for(int i=0;i<threads.size();i++){
