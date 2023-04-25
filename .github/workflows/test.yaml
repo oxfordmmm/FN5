@@ -13,7 +13,7 @@ jobs:
   
     - name: Setup
       run: |
-        apt install g++ python3
+        sudo apt install g++ python3
 
     - name: Compile
       run: |
