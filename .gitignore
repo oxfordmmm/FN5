@@ -38,6 +38,9 @@ new_saves/*
 outputs/*
 cryptic_fastas
 *.tar.gz
+test/saves
+
+**/__pycache__
 
 #Build data
 build/*
@@ -49,5 +52,4 @@ build/*
 
 !**/.gitkeep
 *massif*
-test/*
 .pyetst_cache

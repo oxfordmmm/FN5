@@ -27,6 +27,17 @@ string output_file = "outputs/all.txt";
 */
 int thread_count = 20;
 
+/**
+* @brief Default reference genome. Note that changing this without deleting saves **WILL** cause issues
+*/
+string ref_genome_path = "NC_000962.3.fasta";
+
+/**
+* @brief Default exclusion mask. Note that changing this without deleting saves **WILL** cause issues
+            If this is set to "ignore", no mask will be used.
+*/
+string exclude_mask_path = "tb-exclude.txt";
+
 
 /**
 * @brief Load all saves from disk
@@ -435,6 +446,9 @@ void add_many(string path, string reference, unordered_set<int> mask, int cutoff
     //Compare each new one with an each existing comparison
     for(int i=0;i<existing.size();i++){
         for(int j=0;j<others.size();j++){
+            if(existing.at(i)->uuid == others.at(j)->uuid){
+                continue;
+            }
             comparisons.push_back(make_tuple(existing.at(i), others.at(j)));
         }
     }
@@ -608,7 +622,14 @@ int main(int nargs, const char* args_[]){
     if(check_flag(args, "--output_file")){
         output_file = args.at("--output_file");
     }
-    
+    if(check_flag(args, "--reference")){
+        ref_genome_path = args.at("--reference");
+    }
+    if(check_flag(args, "--mask")){
+        exclude_mask_path = args.at("--mask");
+    }
+
+
     int cutoff = 20;
     if(check_required(args, {"--cutoff"})){
         //Take the user's req of a cutoff if given
@@ -622,9 +643,9 @@ int main(int nargs, const char* args_[]){
         return 0;
     }
 
-    string reference = load_reference("ref.upper.fasta");
+    string reference = load_reference(ref_genome_path);
     
-    unordered_set<int> mask = load_mask("tb-exclude.txt");
+    unordered_set<int> mask = load_mask(exclude_mask_path);
 
     if(check_flag(args, "--bulk_load")){
         bulk_load(args.at("--bulk_load"), reference, mask);
