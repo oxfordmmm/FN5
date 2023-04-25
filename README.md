@@ -105,9 +105,6 @@ input_paths="<path to a line separated file of FASTA paths to add>"
 Results will be populated to `comparisons.txt` currently, but this could be parsed into a DB or similar
 
 ## TODO:
-* Replace hard coded values such as ref genome etc
 * Lower case FASTA support
 * Proper DB? Currently this is based on the idea that the output file can be parsed as required
-* Ref genome isn't strictly a FASTA file, but that is trivial to update
-* Binary saves rather than ASCII
 
