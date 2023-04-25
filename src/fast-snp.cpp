@@ -61,6 +61,76 @@ vector<Sample*> load_saves(){
     return samples;
 }
 
+/**
+* @brief Load some saves. To be used by a thread
+*
+* @param filenames Vector of paths to saves
+* @param acc Accumulator to be added to once all saves are loaded. Used for implicit return
+*/
+void load_save_thread(vector<string> filenames, vector<Sample*> *acc){
+    vector<Sample*> samples;
+    for(int i=0;i<filenames.size();i++){
+        samples.push_back(readSample(filenames.at(i)));
+    }
+
+    mutex_lock.lock();
+        for(int i=0;i<samples.size();i++){
+            acc->push_back(samples.at(i));
+        }
+    mutex_lock.unlock();
+}
+
+/**
+* @brief Load all saves using multithreading
+*
+* @returns Vector of all loaded saves
+*/
+vector<Sample*> load_saves_multithreaded(){
+    unordered_set<string> saves;
+    for (const auto & entry : fs::directory_iterator(save_dir)){
+        string p = entry.path();
+        //Check for .gitkeep or nothing (we want to ignore this)
+        if(p == save_dir+"/.gitkeep" || p == save_dir){
+            continue;
+        }
+        
+        //Remove `.A` etc
+        p.pop_back();
+        p.pop_back();
+
+        //Only add if the path found is not empty
+        if(p.find_first_not_of(' ') != string::npos){
+            saves.insert(p);
+        }
+    }
+
+    vector<Sample*> acc;
+    vector<string> filenames;
+    for(const string elem: saves){
+        filenames.push_back(elem);
+    }
+
+    int chunk_size = filenames.size() / thread_count;
+    vector<thread> threads;
+    for(int i=0;i<thread_count;i++){
+        vector<string> these(filenames.begin() + i*chunk_size, filenames.begin() + i*chunk_size + chunk_size);
+        threads.push_back(thread(load_save_thread, these, &acc));
+    }
+    //Catch ones missed at the end due to rounding (doing on main thread)
+    vector<string> missed;
+    for(int i=chunk_size*thread_count;i<filenames.size();i++){
+        missed.push_back(filenames.at(i));
+    }
+    load_save_thread(missed, &acc);
+
+    for(int i=0;i<threads.size();i++){
+        threads.at(i).join();
+    }
+
+    return acc;
+}
+
+
 
 /**
 * @brief Parse the FASTA files defined in `paths` and save to disk in a threadsafe manner
@@ -312,7 +382,7 @@ void add_many(string path, string reference, unordered_set<int> mask, int cutoff
     //Should be significantly faster by multithreading
 
     //Load existing samples
-    vector<Sample*> existing = load_saves();
+    vector<Sample*> existing = load_saves_multithreaded();
 
     //Open the path, and treat each line as a new FASTA file
     vector<Sample*> others;
@@ -547,7 +617,7 @@ int main(int nargs, const char* args_[]){
 
     //Check for compute first as it doesn't need reference
     if(check_flag(args, "--compute")){
-        vector<Sample*> samples = load_saves();
+        vector<Sample*> samples = load_saves_multithreaded();
         compute_loaded(cutoff, samples);
         return 0;
     }
