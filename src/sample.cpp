@@ -165,7 +165,7 @@ class Sample{
          */
         unordered_set<int> dist_x(unordered_set<int> this_x, unordered_set<int> this_n, unordered_set<int> sample_x, unordered_set<int> sample_n, unordered_set<int> acc, int cutoff){
             //Increment cutoff so we can reject distances > cutoff entirely
-            cutoff++; // FIXME
+            cutoff++;
             for(const int& elem: this_x){
                 if(acc.size() == cutoff){
                     return acc;
@@ -195,6 +195,54 @@ class Sample{
         }
 };
 
+/**
+* @brief Save the contents of an unordered set to disk using binary.
+*
+* @param to_save Set to save
+* @param filename Output filename
+*/
+void save_n(unordered_set<int> to_save, string filename){
+    fstream out(filename, fstream::binary | fstream::out);
+
+    for(const int elem: to_save){
+        const int *p = &elem;
+        const char *p_ = (char *) p;
+        out.write(p_, 4);
+    }
+
+    out.close();
+}
+
+/**
+* @brief Load an unordered set from a binary save on disk
+*
+* @param filename File to load
+* @returns Unordered set of the ints stored in the file
+*/
+unordered_set<int> load_n(string filename){
+    //ate flag seeks to the end of the file
+    fstream in(filename, fstream::binary | fstream::in | fstream::ate);
+    //Get the size of the file in bytes (we have to convert this as 1 int == 4 bytes)
+    int size = in.tellg();
+    in.seekg(0); //Go back to the start so we can read
+
+    unordered_set<int> output;
+
+    for(int j=0;j<size/4;j++){
+        //Read 4 characters from the file into a char array
+        char i[4];
+        in.read(i, 4);
+
+        //Convert the char array into an int and insert
+        int *p;
+        p = (int *) i;
+        output.insert(*p);
+    }
+
+    in.close();
+
+    return output;
+}
 
 /**
 * @brief Save a sample to disk
@@ -231,13 +279,7 @@ void save(string filename, Sample* sample){
                 toSave = sample->N;
                 break;
         }
-        ofstream out(f, ios::binary);
-        for(const int elem: toSave){
-            out << elem << endl;
-        }
-        out << EOF;
-        out.flush();
-        out.close();
+        save_n(toSave, f);
     }
 }
 
@@ -252,25 +294,7 @@ Sample* readSample(string filename){
     vector<unordered_set<int>> loading;
     for(int i=0; i<types.size(); i++){
         string f = filename + '.' + types.at(i);
-        string acc;
-        char ch;
-        fstream fin(f, fstream::in | fstream::binary);
-        unordered_set<int> toLoad;
-        int counter = 0;
-        while (fin >> noskipws >> ch) {
-            if(ch == '\n'){
-                //This is an endl, so store whats currently in acc as an int and reset
-                toLoad.insert(stoi(acc));
-                acc = "";
-            }
-            else{
-                //Just add to acc
-                acc += ch;
-            }
-        }
-        fin.close();
-
-        loading.push_back(toLoad);
+        loading.push_back(load_n(f));
     }
     Sample *s = new Sample(loading.at(0), loading.at(1), loading.at(2), loading.at(3), loading.at(4));
     

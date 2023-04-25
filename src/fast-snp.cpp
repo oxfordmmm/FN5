@@ -1,6 +1,7 @@
 #include "sample.cpp"
 #include "argparse.cpp"
 #include <mutex>
+#include <tuple>
 
 using namespace std;
 namespace fs = std::filesystem;
@@ -59,6 +60,76 @@ vector<Sample*> load_saves(){
 
     return samples;
 }
+
+/**
+* @brief Load some saves. To be used by a thread
+*
+* @param filenames Vector of paths to saves
+* @param acc Accumulator to be added to once all saves are loaded. Used for implicit return
+*/
+void load_save_thread(vector<string> filenames, vector<Sample*> *acc){
+    vector<Sample*> samples;
+    for(int i=0;i<filenames.size();i++){
+        samples.push_back(readSample(filenames.at(i)));
+    }
+
+    mutex_lock.lock();
+        for(int i=0;i<samples.size();i++){
+            acc->push_back(samples.at(i));
+        }
+    mutex_lock.unlock();
+}
+
+/**
+* @brief Load all saves using multithreading
+*
+* @returns Vector of all loaded saves
+*/
+vector<Sample*> load_saves_multithreaded(){
+    unordered_set<string> saves;
+    for (const auto & entry : fs::directory_iterator(save_dir)){
+        string p = entry.path();
+        //Check for .gitkeep or nothing (we want to ignore this)
+        if(p == save_dir+"/.gitkeep" || p == save_dir){
+            continue;
+        }
+        
+        //Remove `.A` etc
+        p.pop_back();
+        p.pop_back();
+
+        //Only add if the path found is not empty
+        if(p.find_first_not_of(' ') != string::npos){
+            saves.insert(p);
+        }
+    }
+
+    vector<Sample*> acc;
+    vector<string> filenames;
+    for(const string elem: saves){
+        filenames.push_back(elem);
+    }
+
+    int chunk_size = filenames.size() / thread_count;
+    vector<thread> threads;
+    for(int i=0;i<thread_count;i++){
+        vector<string> these(filenames.begin() + i*chunk_size, filenames.begin() + i*chunk_size + chunk_size);
+        threads.push_back(thread(load_save_thread, these, &acc));
+    }
+    //Catch ones missed at the end due to rounding (doing on main thread)
+    vector<string> missed;
+    for(int i=chunk_size*thread_count;i<filenames.size();i++){
+        missed.push_back(filenames.at(i));
+    }
+    load_save_thread(missed, &acc);
+
+    for(int i=0;i<threads.size();i++){
+        threads.at(i).join();
+    }
+
+    return acc;
+}
+
 
 
 /**
@@ -158,6 +229,20 @@ void save_comparisons(vector<tuple<string, string, int>> comparisons){
             output << get<0>(elem) << " " << get<1>(elem) << " " << get<2>(elem) << endl;
         }
         output.close();
+    mutex_lock.unlock();
+}
+
+/**
+* @brief Print a list of comparisons to stdout. Threadsafe
+*
+* @param comparisons List of precomputed comparisons. Tuples of (guid1, guid2, dist)
+*/
+void print_comparisons(vector<tuple<string, string, int>> comparisons){
+    //Save some comparisons to disk in a threadsafe manner
+    mutex_lock.lock();
+        for(const tuple<string, string, int> elem: comparisons){
+            cout << get<0>(elem) << " " << get<1>(elem) << " " << get<2>(elem) << endl;
+        }
     mutex_lock.unlock();
 }
 
@@ -262,6 +347,7 @@ void add_sample(string path, string reference, unordered_set<int> mask, int cuto
 */
 void do_comparisons(vector<tuple<Sample*, Sample*>> comparisons, int cutoff){
     //To be used by Thread to do comparisons in parallel
+    vector<tuple<string, string, int>> distances;
     for(int i=0;i<comparisons.size();i++){
         Sample *s1 = get<0>(comparisons.at(i));
         Sample *s2 = get<1>(comparisons.at(i));
@@ -274,10 +360,13 @@ void do_comparisons(vector<tuple<Sample*, Sample*>> comparisons, int cutoff){
             continue;
         }
         
-        mutex_lock.lock();
-            cout << s1->uuid << " " << s2->uuid << " " << dist << endl;
-        mutex_lock.unlock();
+        distances.push_back(make_tuple(s1->uuid, s2->uuid, dist));
+        if(distances.size() == 1000){
+            print_comparisons(distances);
+            distances = {};
+        }
     }
+    print_comparisons(distances);
 }
 
 /**
@@ -293,7 +382,7 @@ void add_many(string path, string reference, unordered_set<int> mask, int cutoff
     //Should be significantly faster by multithreading
 
     //Load existing samples
-    vector<Sample*> existing = load_saves();
+    vector<Sample*> existing = load_saves_multithreaded();
 
     //Open the path, and treat each line as a new FASTA file
     vector<Sample*> others;
@@ -478,18 +567,15 @@ void compute_loaded(int cutoff, vector<Sample*> samples){
         threads.push_back(thread(do_comparisons, these, cutoff));
     }
     //Catch ones missed at the end due to rounding (doing on main thread)
-
+    vector<tuple<string, string, int>> distances;
     for(int i=chunk_size*thread_count;i<comparisons.size();i++){
         tuple<Sample*, Sample*> val = comparisons.at(i);
         int dist = get<0>(val)->dist(get<1>(val), cutoff);
         if(dist <= cutoff){
-            mutex_lock.lock();
-                // fstream output(output_file, fstream::app);
-                cout << get<0>(val)->uuid << " " << get<1>(val)->uuid << " " << dist << endl;
-                // output.close();
-            mutex_lock.unlock();
+            distances.push_back(make_tuple(get<0>(val)->uuid, get<1>(val)->uuid, dist));
         }
     }
+    print_comparisons(distances);
 
     //Join the threads
     for(int i=0;i<threads.size();i++){
@@ -531,7 +617,7 @@ int main(int nargs, const char* args_[]){
 
     //Check for compute first as it doesn't need reference
     if(check_flag(args, "--compute")){
-        vector<Sample*> samples = load_saves();
+        vector<Sample*> samples = load_saves_multithreaded();
         compute_loaded(cutoff, samples);
         return 0;
     }

@@ -25,6 +25,10 @@ Most of this time taken is also just for loading the saves (this takes somewhere
 
 By using a SNP cutoff, the amount of data produced becomes significantly more tractable - cuttof of 20 reduces the comparison matrix for the cryptic samples from ~14GB (>100,000,000 comparisons) to ~200MB
 
+With binary saves:
+* Time to parse and save to disk: 54s
+* Time to construct SNP matrix with cutoff of 20: 3min 30s
+
 ## Compile
 ```
 g++ src/fast-snp.cpp -Isrc -std=c++20 -w -pthread -O3 -o fast-snp
@@ -102,7 +106,6 @@ Results will be populated to `comparisons.txt` currently, but this could be pars
 
 ## TODO:
 * Replace hard coded values such as ref genome etc
-* Multithread reading saves from disk? Possibly worse performance??
 * Lower case FASTA support
 * Proper DB? Currently this is based on the idea that the output file can be parsed as required
 * Ref genome isn't strictly a FASTA file, but that is trivial to update
