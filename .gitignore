@@ -52,4 +52,8 @@ build/*
 
 !**/.gitkeep
 *massif*
-.pyetst_cache
+.pytest_cache
+
+#Ensure that the test lists are kept
+!test/all.txt
+!test/two_samples.txt
