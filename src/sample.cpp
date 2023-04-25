@@ -320,7 +320,7 @@ Sample* readSample(string filename){
 /**
 * @brief Load the reference from disk
 * 
-* @param filename Path to the reference genome
+* @param filename Path to the reference genome FASTA
 * @returns string of the reference nucleotides
 */
 string load_reference(string filename){
@@ -328,9 +328,22 @@ string load_reference(string filename){
     string reference;
     char ch;
     fstream fin(filename, fstream::in);
+
+    //First line is the header, but for this we don't care about it
+    while(fin >> noskipws >> ch){
+        if(ch == '\n'){
+            break;
+        }
+    }
+    //Now just parse the file
     while (fin >> noskipws >> ch) {
+        if(ch == '\n'){
+            //We don't want these
+            continue;
+        }
         reference += ch;
     }
+    
     fin.close();
 
     return reference;
@@ -345,9 +358,13 @@ string load_reference(string filename){
 */
 unordered_set<int> load_mask(string filename){
     //Load the exclude mask
+    unordered_set<int> mask;
+    if(filename == "ignore"){
+        //If the user has requested to ignore this, then do.
+        return mask;
+    }
     fstream fin2(filename, fstream::in);
     string acc;
-    unordered_set<int> mask;
     char ch;
     while (fin2 >> noskipws >> ch) {
         if(ch == '\n'){

@@ -1,0 +1,29 @@
+
+name: Tests
+on: [push]
+
+jobs:
+  build:
+    name: Run tests
+    runs-on: ubuntu-latest
+
+    steps:
+
+    - uses: actions/checkout@v2
+  
+    - name: Setup
+      run: |
+        sudo apt install g++ python3 python3-pip
+        pip install pytest
+
+    - name: Compile
+      run: |
+        g++ src/fast-snp.cpp -Isrc -std=c++20 -w -pthread -O3 -o fast-snp
+
+    - name: Run program
+      run: |
+        ./test/test.sh    
+
+    - name: Test outputs
+      run: |
+        python3 -m pytest --exitfirst --verbose

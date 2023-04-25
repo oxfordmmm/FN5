@@ -1,0 +1,2 @@
+test/cases/1.fasta
+test/cases/4.fasta
