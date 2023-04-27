@@ -111,6 +111,15 @@ class Sample{
                         case '-':
                             N.insert(i);
                             break;
+                        case 'X':
+                            N.insert(i);
+                            break;
+                        case 'O':
+                            N.insert(i);
+                            break;
+                        case 'Z':
+                            N.insert(i);
+                            break;
                     }
                 }
                 i++;
