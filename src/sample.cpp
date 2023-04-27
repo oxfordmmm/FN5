@@ -81,7 +81,7 @@ class Sample{
 
             int i = 0;
             while (fin >> noskipws >> ch) {
-                if(ch == '\n'){ 
+                if(ch == '\n' || ch == '\r'){ 
                     //We don't care about these endl chars
                     continue;
                 }
@@ -325,7 +325,7 @@ Sample* readSample(string filename){
 */
 string load_reference(string filename){
     //Load reference
-    string reference;
+    string reference = "";
     char ch;
     fstream fin(filename, fstream::in);
 
@@ -337,7 +337,7 @@ string load_reference(string filename){
     }
     //Now just parse the file
     while (fin >> noskipws >> ch) {
-        if(ch == '\n'){
+        if(ch == '\n' || ch =='\r'){
             //We don't want these
             continue;
         }
