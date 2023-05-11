@@ -45,13 +45,15 @@ test/saves
 #Build data
 build/*
 
-#Keep the env file out
+#Keep the env files out
 .env
+.db
 
 *.txt
 
 !**/.gitkeep
 *massif*
+mprofile*
 .pytest_cache
 
 #Ensure that the test lists are kept
