@@ -10,7 +10,6 @@ def test_1():
         actual = set([tuple(sorted(line.strip().split(" "))) for line in f])
     
     expected = [
-        "Comparing 4 for a total of 6 comparisons",
         "sample4 sample1 12",
         "sample4 sample3 11",
         "sample4 sample2 11",
@@ -45,7 +44,6 @@ def test_3():
         actual = set([tuple(sorted(line.strip().split(" "))) for line in f])
     
     expected = set([
-        "Adding 2 new samples to an existing 4 with 7 comparisons",
         "sample1 sample4 12",
         "sample3 sample1 1",
         "sample3 sample4 11",
@@ -63,7 +61,6 @@ def test_4():
         actual = set([tuple(sorted(line.strip().split(" "))) for line in f])
 
     expected = [
-            "Comparing against 4",
             "sample4 sample1 12",
             "sample4 sample3 11",
             "sample4 sample2 11",

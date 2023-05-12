@@ -3,13 +3,14 @@ from sqlalchemy.orm import DeclarativeBase
 from sqlalchemy.orm import Mapped
 from sqlalchemy.orm import mapped_column
 from sqlalchemy import String
-from sqlalchemy import Integer
+from sqlalchemy import Integer, Boolean
 from sqlalchemy.orm import create_session
 import time
 import subprocess
 import shlex
 from dotenv import load_dotenv
 import os
+import random
 
 load_dotenv(".db")
 
@@ -56,10 +57,65 @@ class Closest(Base):
 
     def __repr__(self) -> str:
         return f"Nearest neighbour to {self.guid} is {self.closest}. {self.dist} SNPs away"
+class Lock(Base):
+    '''For locking the DB during execution
+    '''
+    __tablename__ = "snp_lock"
 
+    id_: Mapped[int] = mapped_column(Integer(), primary_key=True, autoincrement=True)
+    start: Mapped[float] = mapped_column(Integer())
+    thread_id: Mapped[int] = mapped_column(Integer())
+    done: Mapped[bool] = mapped_column(Boolean())
+
+    def __repr__(self) -> str:
+        return f"Lock(ID={self.id_}, start={self.start}, thread_id={self.thread_id}, done={self.done})"
 
 #Create tables if don't already exist
 Base.metadata.create_all(engine)
+
+def add_lock() -> Lock:
+    #Add a lock to the table
+    session = create_session(engine)
+    lock = Lock(start=time.time(), thread_id=random.randint(0,1000000000), done=False)
+    session.add(lock)
+    session.commit()
+    return lock, session
+
+def get_lock(lock):
+    #Wait for your turn
+    locked = True
+    while locked:
+        #Get the next valid lock in the table
+        session = create_session(engine)
+        q = session.query(Lock).\
+            filter(Lock.done == False).\
+            filter(Lock.start + 3600 > time.time()).\
+            order_by(Lock.id_.asc()).first()
+        if q.thread_id == lock.thread_id:
+            #We're next!
+            locked = False
+        else:
+            time.sleep(1)
+        session.close()
+
+
+
+def unlock(session, lock):
+    #Delete from DB
+    session.delete(lock)
+    session.commit()
+    session.close()
+
+#~~~~~~~~~~~~~~~~~Get the lock from the DB~~~~~~~~~~~~~~~~~~~~~~~~
+#Ensures sequential adding across nextflow
+
+#Add row to DB
+lock, s = add_lock()
+
+#Wait your turn...
+get_lock(lock)
+print("Got lock, starting run...")
+
 
 #~~~~~~~~~~~~~~~~~Actually compute~~~~~~~~~~~~~~~~~~~~~~~~
 start = time.time()
@@ -150,5 +206,9 @@ for res in q:
     print(f"{other} --> {res.dist}")
 
 q = session.query(Closest).filter(Closest.guid == guid).first()
+session.close()
 print(f"Nearest neighbour: {q.closest} --> {q.dist}")
 print("Queried in: ", time.time() - start)
+
+#~~~~~~~~~~~~~~~~~Unlock the DB to allow others to run~~~~~~~~~~~~~~~~~~~~~~~~
+unlock(s, lock)
