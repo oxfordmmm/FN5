@@ -47,6 +47,7 @@ build/*
 
 #Keep the env file out
 .env
+.db
 
 *.txt
 
