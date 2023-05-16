@@ -1,5 +1,5 @@
-# fast-snp
-(I know this name has already been used for other projects. It isn't intended to be permanent)
+# Find Neighbour 5
+Spiritual successor to [Find Neighbour 4](https://github.com/davidhwyllie/findNeighbour4) - continuing the work of David Wyllie.
 
 SNP matrix generation with caching to disk to allow fast reloading.
 A test set of 1286 cryptic samples was used. Once parsed and saved, these can be read into memory (on a single thread) in 0.5s - scaling linearly
