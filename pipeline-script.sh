@@ -10,17 +10,17 @@ latest=$(curl -SsL $bucket | jq -r '.objects[].name' | sort | tail -n 1)
 echo Using $latest
 
 echo Getting from bucket
-time curl -SsL $bucket/$latest > $latest
+curl -SsL $bucket/$latest > $latest
 echo
 echo untaring
-time tar xzf $latest
+tar xzf $latest
 echo
 #<><><><><><>
 
 
 #Get comparisons with the new ones
 echo comparing
-time ./fast-snp --add_many $input_paths --cutoff 20 > comparisons.txt
+./fast-snp --add_many $input_paths --cutoff 20000 > comparisons.txt
 echo
 #<><><><><><>
 
@@ -28,10 +28,10 @@ echo
 #   saves/* --> <bucket>
 output="$(date +%s).tar.gz"
 echo compressing
-time tar czf $output saves
+tar czf $output saves
 echo
 echo uploading
-time curl -X PUT --data-binary "@$(pwd)/$output" $bucket/$output
+curl -X PUT --data-binary "@$(pwd)/$output" $bucket/$output
 #<><><><><><>
 
 #Do something with comparions.txt here

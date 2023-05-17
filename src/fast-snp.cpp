@@ -38,6 +38,11 @@ string ref_genome_path = "NC_000962.3.fasta";
 */
 string exclude_mask_path = "tb-exclude.txt";
 
+/**
+* @brief Whether to print debug messages such as how many samples are loaded. Can be changed with the `--debug` flag
+*/
+bool debug = false;
+
 
 /**
 * @brief Load all saves from disk
@@ -200,7 +205,9 @@ vector<Sample*> bulk_load(string path, string reference, unordered_set<int> mask
     }
     pathsFile.close();
 
-    cout << "Saving " << filepaths.size() << " new samples to " << save_dir << endl;
+    if(debug){
+        cout << "Saving " << filepaths.size() << " new samples to " << save_dir << endl;
+    }
 
     //Do comparisons with multithreading
     int chunk_size = filepaths.size() / thread_count;
@@ -467,8 +474,9 @@ void add_many(string path, string reference, unordered_set<int> mask, int cutoff
             }
         }
     }
-
-    cout << "Adding " << others.size() << " new samples to an existing " << existing.size() <<  " with " << comparisons.size() << " comparisons" << endl;
+    if(debug){
+        cout << "Adding " << others.size() << " new samples to an existing " << existing.size() <<  " with " << comparisons.size() << " comparisons" << endl;
+    }
 
     //Do comparisons with multithreading
     chunk_size = comparisons.size() / thread_count;
@@ -511,7 +519,9 @@ void compare_row(string path, string reference, unordered_set<int> mask, int cut
     Sample *s = new Sample(path, reference, mask);
 
     vector<Sample*> samples = load_saves();
-    cout << "Comparing against " << samples.size() << endl;
+    if(debug){
+        cout << "Comparing against " << samples.size() << endl;
+    }
     int closest_dist = 999999999;
     string closest_uuid = "";
     bool found_within_cutoff = false;
@@ -567,7 +577,9 @@ void compute_loaded(int cutoff, vector<Sample*> samples){
             }
         }
     }
-    cout << "Comparing " << samples.size() << " for a total of " << comparisons.size() << " comparisons" << endl;
+    if(debug){
+        cout << "Comparing " << samples.size() << " for a total of " << comparisons.size() << " comparisons" << endl;
+    }
 
     //Clear output file ready for thread-by-thread appending
     fstream output(output_file, fstream::out);
@@ -627,6 +639,11 @@ int main(int nargs, const char* args_[]){
     }
     if(check_flag(args, "--mask")){
         exclude_mask_path = args.at("--mask");
+    }
+    if(check_flag(args, "--debug")){
+        if(args.at("--debug") != "0"){
+            debug = true;
+        }
     }
 
 
