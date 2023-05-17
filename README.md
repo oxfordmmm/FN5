@@ -31,33 +31,33 @@ With binary saves:
 
 ## Compile
 ```
-g++ src/fast-snp.cpp -Isrc -std=c++20 -w -pthread -O3 -o fast-snp
+g++ src/fn5.cpp -Isrc -std=c++20 -w -pthread -O3 -o fn5
 ```
 
 ## Parse some FASTA files
 Parse some FASTA files into saves. Pass a path to a line separated file of FASTA paths. Currently only supporting upper case nucleotides. This is multithreaded, so can be performed efficiently.
 
 ```
-./fast-snp --bulk_load <path to list>
+./fn5 --bulk_load <path to list>
 ```
 
 ## Build a SNP matrix
 Perform pairwise comparisons of all samples which have been saved already. Dumps to a txt file of format `<guid1> <guid2> <dist>`. Current path to this is `outputs/all.txt`. This can be changed with the `--output_file` flag
 Cutoff is a mandatory parameter (set arbitrarily high to ignore). `12` is a good value for speed and use, but for several use cases, this cutoff may not be helpful
 ```
-./fast-snp --compute <cutoff>
+./fn5 --compute <cutoff>
 ```
 
 ## Add a single new file
 From cold (i.e nothing in RAM), add a new sample to the matrix. This works fine for adding single samples, but is **very** slow for building a full matrix from scratch due to reading from disk for every sample
 ```
-./fast-snp --add <FASTA path>
+./fn5 --add <FASTA path>
 ```
 
 ## Add a batch of new files
 From cold, add a list of samples to the matrix. As multiple comparisons occur without reading from disk each time, this is close to performance of `--bulk_load` then `--compute`. Takes a path to a line separated file of FASTA paths. Currently uses a 20 SNP threshold
 ```
-./fast-snp --add_many <path>
+./fn5 --add_many <path>
 ```
 
 ## Set SNP cutoff

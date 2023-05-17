@@ -20,7 +20,7 @@ echo
 
 #Get comparisons with the new ones
 echo comparing
-./fast-snp --add_many $input_paths --cutoff 20000 > comparisons.txt
+./fn5 --add_many $input_paths --cutoff 20000 > comparisons.txt
 echo
 #<><><><><><>
 

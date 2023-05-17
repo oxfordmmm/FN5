@@ -18,7 +18,7 @@ jobs:
 
     - name: Compile
       run: |
-        g++ src/fast-snp.cpp -Isrc -std=c++20 -w -pthread -O3 -o fast-snp
+        g++ src/fn5.cpp -Isrc -std=c++20 -w -pthread -O3 -o fn5
 
     - name: Run program
       run: |

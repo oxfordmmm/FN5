@@ -30,7 +30,7 @@
 *.exe
 *.out
 *.app
-fast-snp
+fn5
 
 #Saved data
 saves/*
