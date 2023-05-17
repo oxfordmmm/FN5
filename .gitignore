@@ -51,6 +51,9 @@ build/*
 
 *.txt
 
+!requirements.txt
+
+
 !**/.gitkeep
 *massif*
 mprofile*
