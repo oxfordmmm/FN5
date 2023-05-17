@@ -63,48 +63,36 @@ From cold, add a list of samples to the matrix. As multiple comparisons occur wi
 ## Set SNP cutoff
 In most cases, a cutoff of 20 makes sense, but to change this, use the `--cutoff` flag. To have no cutoff, just set arbirarily high
 
-## Querying data
-Currently, pairwise distances are dumped to a plaintext file consisting of `<guid1> <guid2> <dist>`. This works fine for cases in which we actually only care about distances within cutoff. However, if we remove the cutoff, this file grows to be dangerously large, and **very** slow to query (1.5min+ with 15226 samples)
+## Outputs
+By default, most functions lead to outputs to `stdout`. This allows file redirection/piping to other programs. Querying this output should then be trivial
 
-### Simple queries
-Based on the data in `outputs/all.txt`, find samples which match. Note that this is reliant on distances being <= cutoff defined when this was populated
-```
-python3 query.py --guid <guid>
-```
-
-Optinally add a secondard cutoff. Useful for if you populated `outputs/all.txt` with a cutoff of say 100 but want to query under 20 for example.
-```
-python3 query.py --guid <guid> --snp <cutoff>
-```
-It is not wise to use this on large datasets without a cutoff in place though due to time and space complexity. Weirdly a simple C++ implementation is significantly slower...
-
-
-### More complex
-In cases where we are interested in finding arbitrarily high cutoffs, or just want the nearest neighbour of a single sample (even outside of cutoff distance), it is significantly quicker to just recompute this. This will find all neighbours <= 20 away, and if there are none in this range, return the nearest one. The 
-```
-./fast-snp --compare_row <path to sample FASTA>
-```
-Note that this is significantly slower than querying the precomputed data in cases where a cutoff is used and we don't care about nearest past this. This is also single threaded, so could be used within a container or similar...
-With 15226 samples, it can return in ~10.5s
-
-If comparing >1 sample, it is more efficient to use this version:
-```
-./fast-snp --add_many <path to line separated file of FASTA paths>
-```
 
 ## Nextflow-like
-Testing some Nextflow-like behaviour, including fetching from and pushing to buckets. Currently using cutoff of 20
+Testing some Nextflow-like behaviour, including fetching from and pushing to buckets. This produces a threadsafe, self-queuing system which will allow only one batch to be added at a time. The results are parsed into a database and can then be queried.
+### Setup
+As this uses Python for the results parsing and database, install all requirements (optionally in a virtualenv) with `pip install -r requirements.txt`.
+
 1. Create a file called `.env` at the top level of this directory
-2. Populate with
+2. Populate `.env` with
 ```
-bucket="<bucket URl here>"
+bucket="<bucket PAR URl here>"
 input_paths="<path to a line separated file of FASTA paths to add>"
 ```
-3. Run `./pipeline-script.sh`
+3. Setup an SQL database (MySQL works here)
+4. Create a file called `.db` at the top level of this directory
+5. Populate `.db` with
+```
+DB_PATH="<DB URL here>"
+#Example
+DB_PATH="mysql://<user>:<password>@<host>:<port>/<db name>"
+```
 
-Results will be populated to `comparisons.txt` currently, but this could be parsed into a DB or similar
+### Calculate distances
+Run `python run.py`
+
+### Query database
+Run `python query.py --guid <guid here>`
 
 ## TODO:
 * Lower case FASTA support
-* Proper DB? Currently this is based on the idea that the output file can be parsed as required
 

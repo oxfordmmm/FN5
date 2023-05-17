@@ -1,30 +1,26 @@
 '''Very simple querying of the output matrix to find nearest neighbours
 '''
-
+from db.model import *
 import argparse
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--guid", required=True, help="GUID of the sample to query for")
-    parser.add_argument("--snps", required=False, default=float('inf'), help="SNP threshold for nearest neighbour")
     options = parser.parse_args()
 
+    start = time.time()
+    conn, engine = get_engine()
+    session = create_session(engine)
     guid = options.guid
-    cutoff = float(options.snps)
+    q = session.query(Distances).filter((Distances.guid1 == guid) | (Distances.guid2 == guid)).all()
+    for res in q:
+        if res.guid1 == guid:
+            other = res.guid1
+        else:
+            other = res.guid2
+        print(f"{other} --> {res.dist}")
 
-    with open("outputs/all.txt") as f:
-        data = [line.strip() for line in f]
-    
-    matches = {}
-    for line in data:
-        guid1, guid2, snp = line.split(" ")
-        if guid1 == guid:
-            snp = int(snp)
-            if snp <= cutoff:
-                matches[guid2] = snp
-        elif guid2 == guid:
-            snp = int(snp)
-            if snp <=cutoff:
-                matches[guid1] = snp
-    
-    print(matches)
+    q = session.query(Closest).filter(Closest.guid == guid).first()
+    session.close()
+    print(f"Nearest neighbour: {q.closest} --> {q.dist}")
+    print("Queried in: ", time.time() - start)
