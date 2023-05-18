@@ -52,6 +52,7 @@ build/*
 *.txt
 
 !requirements.txt
+!**/CMakeLists.txt
 
 
 !**/.gitkeep
