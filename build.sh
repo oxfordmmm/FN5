@@ -9,7 +9,8 @@ cd build
 cmake ../src
 make
 
-#Move fn5 to main level
+#Move fn5 to main level & test runner to test
 mv fn5 ..
+mv run_tests ../test
 cd ..
 

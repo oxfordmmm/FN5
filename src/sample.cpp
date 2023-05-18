@@ -229,7 +229,7 @@ string load_reference(string filename){
 
     //First line is the header, but for this we don't care about it
     while(fin >> noskipws >> ch){
-        if(ch == '\n'){
+        if(ch == '\n' || ch == '\r'){
             break;
         }
     }
