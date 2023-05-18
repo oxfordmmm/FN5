@@ -18,7 +18,7 @@ jobs:
 
     - name: Compile
       run: |
-        g++ src/fn5.cpp -Isrc -std=c++20 -w -pthread -O3 -o fn5
+        ./build.sh
 
     - name: Run program
       run: |
