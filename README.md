@@ -31,7 +31,7 @@ With binary saves:
 
 ## Compile
 ```
-g++ src/fn5.cpp -Isrc -std=c++20 -w -pthread -O3 -o fn5
+./build.sh
 ```
 
 ## Parse some FASTA files

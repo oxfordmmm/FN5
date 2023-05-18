@@ -14,6 +14,7 @@ set -xe
 
 mkdir -p test/saves
 mkdir -p test/output
+rm test/output/*
 
 ./fn5 --bulk_load test/all.txt --saves_dir test/saves --reference NC_045512.fasta --mask ignore
 ./fn5 --compute 20 --saves_dir test/saves > test/output/1.txt
