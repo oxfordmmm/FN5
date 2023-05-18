@@ -2,6 +2,7 @@
 
 set -xe
 
+mkdir -p build
 cd build
 
 #Compile fn5 and test runner
