@@ -27,3 +27,7 @@ jobs:
     - name: Test outputs
       run: |
         python3 -m pytest --exitfirst --verbose
+      
+    - name: Run unit tests
+      run: |
+        ./unit_test.sh
