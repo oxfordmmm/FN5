@@ -12,6 +12,7 @@ file(GLOB src "*.cpp")
 file(GLOB tests 
 "argparse.cpp" 
 "sample.cpp"
+"comparisons.cpp"
 "../test/test_runner.cpp"
 )
 

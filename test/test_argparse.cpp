@@ -22,5 +22,5 @@ using namespace std;
 //     vector<string> args = {"--flag_1", "arg_1", "--flag_2", "arg_2", "--flag_3", "arg_3"};
 //     map<string, string> expected_args = {{"--flag_1", "arg_1"}, {"--flag_2", "arg_2"}, {"--flag_3", "arg_3"}};
 //     map<string, string> actual_args = parse_args(args.size(), to_args(args));
-//     EXPECT_EQ(expected_args, actual_args);
+//     ASSERT_EQ(expected_args, actual_args);
 // }

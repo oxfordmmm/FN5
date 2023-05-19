@@ -47,10 +47,10 @@ TEST(sample, init){
     unordered_set<int> mask = load_mask("cases/dummy/mask.txt");
 
     string expected_reference = "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA";
-    EXPECT_EQ(expected_reference, reference);
+    ASSERT_EQ(expected_reference, reference);
 
     unordered_set<int> expected_mask = {1};
-    EXPECT_EQ(expected_mask, mask);
+    ASSERT_EQ(expected_mask, mask);
 
     //Empty set for checking things which shouldn't have changed
     unordered_set<int> empty;
@@ -58,51 +58,51 @@ TEST(sample, init){
     //For simplicity here, check without a mask
     Sample* s1 = new Sample("cases/dummy/1.fasta", reference, empty);
     unordered_set<int> C_1 = {0};
-    EXPECT_EQ(s1->uuid, "uuid1");
-    EXPECT_EQ(empty, s1->A);
-    EXPECT_EQ(C_1, s1->C);
-    EXPECT_EQ(empty, s1->G);
-    EXPECT_EQ(empty, s1->T);
-    EXPECT_EQ(empty, s1->N);
+    ASSERT_EQ(s1->uuid, "uuid1");
+    ASSERT_EQ(empty, s1->A);
+    ASSERT_EQ(C_1, s1->C);
+    ASSERT_EQ(empty, s1->G);
+    ASSERT_EQ(empty, s1->T);
+    ASSERT_EQ(empty, s1->N);
 
     Sample* s2 = new Sample("cases/dummy/2.fasta", reference, empty);
     unordered_set<int> T_2 = {1};
-    EXPECT_EQ(s2->uuid, "uuid2");
-    EXPECT_EQ(empty, s2->A);
-    EXPECT_EQ(empty, s2->C);
-    EXPECT_EQ(empty, s2->G);
-    EXPECT_EQ(T_2, s2->T);
-    EXPECT_EQ(empty, s2->N);
+    ASSERT_EQ(s2->uuid, "uuid2");
+    ASSERT_EQ(empty, s2->A);
+    ASSERT_EQ(empty, s2->C);
+    ASSERT_EQ(empty, s2->G);
+    ASSERT_EQ(T_2, s2->T);
+    ASSERT_EQ(empty, s2->N);
 
     //Check that masking position 1 results in no entries for this
     s2 = new Sample("cases/dummy/2.fasta", reference, mask);
-    EXPECT_EQ(s2->uuid, "uuid2");
-    EXPECT_EQ(empty, s2->A);
-    EXPECT_EQ(empty, s2->C);
-    EXPECT_EQ(empty, s2->G);
-    EXPECT_EQ(empty, s2->T);
-    EXPECT_EQ(empty, s2->N);
+    ASSERT_EQ(s2->uuid, "uuid2");
+    ASSERT_EQ(empty, s2->A);
+    ASSERT_EQ(empty, s2->C);
+    ASSERT_EQ(empty, s2->G);
+    ASSERT_EQ(empty, s2->T);
+    ASSERT_EQ(empty, s2->N);
 
     Sample* s3 = new Sample("cases/dummy/3.fasta", reference, empty);
     unordered_set<int> G_3 = {14};
     unordered_set<int> N_3 = {0};
-    EXPECT_EQ(s3->uuid, "uuid3");
-    EXPECT_EQ(empty, s3->A);
-    EXPECT_EQ(empty, s3->C);
-    EXPECT_EQ(G_3, s3->G);
-    EXPECT_EQ(empty, s3->T);
-    EXPECT_EQ(N_3, s3->N);
+    ASSERT_EQ(s3->uuid, "uuid3");
+    ASSERT_EQ(empty, s3->A);
+    ASSERT_EQ(empty, s3->C);
+    ASSERT_EQ(G_3, s3->G);
+    ASSERT_EQ(empty, s3->T);
+    ASSERT_EQ(N_3, s3->N);
 
     Sample* s4 = new Sample("cases/dummy/4.fasta", reference, empty);
     unordered_set<int> G_4 = {1};
     unordered_set<int> N_4 = {0};
     unordered_set<int> T_4 = {71};
-    EXPECT_EQ(s4->uuid, "uuid4");
-    EXPECT_EQ(empty, s4->A);
-    EXPECT_EQ(empty, s4->C);
-    EXPECT_EQ(G_4, s4->G);
-    EXPECT_EQ(T_4, s4->T);
-    EXPECT_EQ(N_4, s4->N);
+    ASSERT_EQ(s4->uuid, "uuid4");
+    ASSERT_EQ(empty, s4->A);
+    ASSERT_EQ(empty, s4->C);
+    ASSERT_EQ(G_4, s4->G);
+    ASSERT_EQ(T_4, s4->T);
+    ASSERT_EQ(N_4, s4->N);
 }
 
 /**
@@ -128,25 +128,25 @@ TEST(sample, dist_no_mask_no_cutoff){
     Sample* s3 = new Sample("cases/dummy/3.fasta", reference, empty);
     Sample* s4 = new Sample("cases/dummy/4.fasta", reference, empty);
 
-    EXPECT_EQ(s1->dist(s1, 99999), 0);
-    EXPECT_EQ(s1->dist(s2, 99999), 2);
-    EXPECT_EQ(s1->dist(s3, 99999), 1);
-    EXPECT_EQ(s1->dist(s4, 99999), 2);
+    ASSERT_EQ(s1->dist(s1, 99999), 0);
+    ASSERT_EQ(s1->dist(s2, 99999), 2);
+    ASSERT_EQ(s1->dist(s3, 99999), 1);
+    ASSERT_EQ(s1->dist(s4, 99999), 2);
 
-    EXPECT_EQ(s2->dist(s1, 99999), 2);
-    EXPECT_EQ(s2->dist(s2, 99999), 0);
-    EXPECT_EQ(s2->dist(s3, 99999), 2);
-    EXPECT_EQ(s2->dist(s4, 99999), 2);
+    ASSERT_EQ(s2->dist(s1, 99999), 2);
+    ASSERT_EQ(s2->dist(s2, 99999), 0);
+    ASSERT_EQ(s2->dist(s3, 99999), 2);
+    ASSERT_EQ(s2->dist(s4, 99999), 2);
 
-    EXPECT_EQ(s3->dist(s1, 99999), 1);
-    EXPECT_EQ(s3->dist(s2, 99999), 2);
-    EXPECT_EQ(s3->dist(s3, 99999), 0);
-    EXPECT_EQ(s3->dist(s4, 99999), 3);
+    ASSERT_EQ(s3->dist(s1, 99999), 1);
+    ASSERT_EQ(s3->dist(s2, 99999), 2);
+    ASSERT_EQ(s3->dist(s3, 99999), 0);
+    ASSERT_EQ(s3->dist(s4, 99999), 3);
 
-    EXPECT_EQ(s4->dist(s1, 99999), 2);
-    EXPECT_EQ(s4->dist(s2, 99999), 2);
-    EXPECT_EQ(s4->dist(s3, 99999), 3);
-    EXPECT_EQ(s4->dist(s4, 99999), 0);
+    ASSERT_EQ(s4->dist(s1, 99999), 2);
+    ASSERT_EQ(s4->dist(s2, 99999), 2);
+    ASSERT_EQ(s4->dist(s3, 99999), 3);
+    ASSERT_EQ(s4->dist(s4, 99999), 0);
 
 }
 
@@ -173,25 +173,25 @@ TEST(sample, dist_no_cutoff){
     Sample* s3 = new Sample("cases/dummy/3.fasta", reference, mask);
     Sample* s4 = new Sample("cases/dummy/4.fasta", reference, mask);
 
-    EXPECT_EQ(s1->dist(s1, 99999), 0);
-    EXPECT_EQ(s1->dist(s2, 99999), 1);
-    EXPECT_EQ(s1->dist(s3, 99999), 1);
-    EXPECT_EQ(s1->dist(s4, 99999), 1);
+    ASSERT_EQ(s1->dist(s1, 99999), 0);
+    ASSERT_EQ(s1->dist(s2, 99999), 1);
+    ASSERT_EQ(s1->dist(s3, 99999), 1);
+    ASSERT_EQ(s1->dist(s4, 99999), 1);
 
-    EXPECT_EQ(s2->dist(s1, 99999), 1);
-    EXPECT_EQ(s2->dist(s2, 99999), 0);
-    EXPECT_EQ(s2->dist(s3, 99999), 1);
-    EXPECT_EQ(s2->dist(s4, 99999), 1);
+    ASSERT_EQ(s2->dist(s1, 99999), 1);
+    ASSERT_EQ(s2->dist(s2, 99999), 0);
+    ASSERT_EQ(s2->dist(s3, 99999), 1);
+    ASSERT_EQ(s2->dist(s4, 99999), 1);
 
-    EXPECT_EQ(s3->dist(s1, 99999), 1);
-    EXPECT_EQ(s3->dist(s2, 99999), 1);
-    EXPECT_EQ(s3->dist(s3, 99999), 0);
-    EXPECT_EQ(s3->dist(s4, 99999), 2);
+    ASSERT_EQ(s3->dist(s1, 99999), 1);
+    ASSERT_EQ(s3->dist(s2, 99999), 1);
+    ASSERT_EQ(s3->dist(s3, 99999), 0);
+    ASSERT_EQ(s3->dist(s4, 99999), 2);
 
-    EXPECT_EQ(s4->dist(s1, 99999), 1);
-    EXPECT_EQ(s4->dist(s2, 99999), 1);
-    EXPECT_EQ(s4->dist(s3, 99999), 2);
-    EXPECT_EQ(s4->dist(s4, 99999), 0);
+    ASSERT_EQ(s4->dist(s1, 99999), 1);
+    ASSERT_EQ(s4->dist(s2, 99999), 1);
+    ASSERT_EQ(s4->dist(s3, 99999), 2);
+    ASSERT_EQ(s4->dist(s4, 99999), 0);
 
 }
 
@@ -210,25 +210,25 @@ TEST(sample, dist_no_mask_cutoff_2){
     //Cutoff of 2 should actually behave the same as no cutoff here
     //If a cutoff is reached, the returned dist is cutoff +1
     //Cases which have dist > 2 are only ever 3, which is the returned value anyway
-    EXPECT_EQ(s1->dist(s1, 2), 0);
-    EXPECT_EQ(s1->dist(s2, 2), 2);
-    EXPECT_EQ(s1->dist(s3, 2), 1);
-    EXPECT_EQ(s1->dist(s4, 2), 2);
+    ASSERT_EQ(s1->dist(s1, 2), 0);
+    ASSERT_EQ(s1->dist(s2, 2), 2);
+    ASSERT_EQ(s1->dist(s3, 2), 1);
+    ASSERT_EQ(s1->dist(s4, 2), 2);
 
-    EXPECT_EQ(s2->dist(s1, 2), 2);
-    EXPECT_EQ(s2->dist(s2, 2), 0);
-    EXPECT_EQ(s2->dist(s3, 2), 2);
-    EXPECT_EQ(s2->dist(s4, 2), 2);
+    ASSERT_EQ(s2->dist(s1, 2), 2);
+    ASSERT_EQ(s2->dist(s2, 2), 0);
+    ASSERT_EQ(s2->dist(s3, 2), 2);
+    ASSERT_EQ(s2->dist(s4, 2), 2);
 
-    EXPECT_EQ(s3->dist(s1, 2), 1);
-    EXPECT_EQ(s3->dist(s2, 2), 2);
-    EXPECT_EQ(s3->dist(s3, 2), 0);
-    EXPECT_EQ(s3->dist(s4, 2), 3);
+    ASSERT_EQ(s3->dist(s1, 2), 1);
+    ASSERT_EQ(s3->dist(s2, 2), 2);
+    ASSERT_EQ(s3->dist(s3, 2), 0);
+    ASSERT_EQ(s3->dist(s4, 2), 3);
 
-    EXPECT_EQ(s4->dist(s1, 2), 2);
-    EXPECT_EQ(s4->dist(s2, 2), 2);
-    EXPECT_EQ(s4->dist(s3, 2), 3);
-    EXPECT_EQ(s4->dist(s4, 2), 0);
+    ASSERT_EQ(s4->dist(s1, 2), 2);
+    ASSERT_EQ(s4->dist(s2, 2), 2);
+    ASSERT_EQ(s4->dist(s3, 2), 3);
+    ASSERT_EQ(s4->dist(s4, 2), 0);
 
 }
 
@@ -245,25 +245,25 @@ TEST(sample, dist_no_mask_cutoff_1){
     Sample* s4 = new Sample("cases/dummy/4.fasta", reference, empty);
 
     //Cutoff of 1 should now return some different distances
-    EXPECT_EQ(s1->dist(s1, 1), 0);
-    EXPECT_EQ(s1->dist(s2, 1), 2);
-    EXPECT_EQ(s1->dist(s3, 1), 1);
-    EXPECT_EQ(s1->dist(s4, 1), 2);
+    ASSERT_EQ(s1->dist(s1, 1), 0);
+    ASSERT_EQ(s1->dist(s2, 1), 2);
+    ASSERT_EQ(s1->dist(s3, 1), 1);
+    ASSERT_EQ(s1->dist(s4, 1), 2);
 
-    EXPECT_EQ(s2->dist(s1, 1), 2);
-    EXPECT_EQ(s2->dist(s2, 1), 0);
-    EXPECT_EQ(s2->dist(s3, 1), 2);
-    EXPECT_EQ(s2->dist(s4, 1), 2);
+    ASSERT_EQ(s2->dist(s1, 1), 2);
+    ASSERT_EQ(s2->dist(s2, 1), 0);
+    ASSERT_EQ(s2->dist(s3, 1), 2);
+    ASSERT_EQ(s2->dist(s4, 1), 2);
 
-    EXPECT_EQ(s3->dist(s1, 1), 1);
-    EXPECT_EQ(s3->dist(s2, 1), 2);
-    EXPECT_EQ(s3->dist(s3, 1), 0);
-    EXPECT_EQ(s3->dist(s4, 1), 2);
+    ASSERT_EQ(s3->dist(s1, 1), 1);
+    ASSERT_EQ(s3->dist(s2, 1), 2);
+    ASSERT_EQ(s3->dist(s3, 1), 0);
+    ASSERT_EQ(s3->dist(s4, 1), 2);
 
-    EXPECT_EQ(s4->dist(s1, 1), 2);
-    EXPECT_EQ(s4->dist(s2, 1), 2);
-    EXPECT_EQ(s4->dist(s3, 1), 2);
-    EXPECT_EQ(s4->dist(s4, 1), 0);
+    ASSERT_EQ(s4->dist(s1, 1), 2);
+    ASSERT_EQ(s4->dist(s2, 1), 2);
+    ASSERT_EQ(s4->dist(s3, 1), 2);
+    ASSERT_EQ(s4->dist(s4, 1), 0);
 
 }
 
@@ -281,25 +281,25 @@ TEST(sample, dist_cutoff_2){
 
     //Again, these values should not change due to cutoff
 
-    EXPECT_EQ(s1->dist(s1, 2), 0);
-    EXPECT_EQ(s1->dist(s2, 2), 1);
-    EXPECT_EQ(s1->dist(s3, 2), 1);
-    EXPECT_EQ(s1->dist(s4, 2), 1);
+    ASSERT_EQ(s1->dist(s1, 2), 0);
+    ASSERT_EQ(s1->dist(s2, 2), 1);
+    ASSERT_EQ(s1->dist(s3, 2), 1);
+    ASSERT_EQ(s1->dist(s4, 2), 1);
 
-    EXPECT_EQ(s2->dist(s1, 2), 1);
-    EXPECT_EQ(s2->dist(s2, 2), 0);
-    EXPECT_EQ(s2->dist(s3, 2), 1);
-    EXPECT_EQ(s2->dist(s4, 2), 1);
+    ASSERT_EQ(s2->dist(s1, 2), 1);
+    ASSERT_EQ(s2->dist(s2, 2), 0);
+    ASSERT_EQ(s2->dist(s3, 2), 1);
+    ASSERT_EQ(s2->dist(s4, 2), 1);
 
-    EXPECT_EQ(s3->dist(s1, 2), 1);
-    EXPECT_EQ(s3->dist(s2, 2), 1);
-    EXPECT_EQ(s3->dist(s3, 2), 0);
-    EXPECT_EQ(s3->dist(s4, 2), 2);
+    ASSERT_EQ(s3->dist(s1, 2), 1);
+    ASSERT_EQ(s3->dist(s2, 2), 1);
+    ASSERT_EQ(s3->dist(s3, 2), 0);
+    ASSERT_EQ(s3->dist(s4, 2), 2);
 
-    EXPECT_EQ(s4->dist(s1, 2), 1);
-    EXPECT_EQ(s4->dist(s2, 2), 1);
-    EXPECT_EQ(s4->dist(s3, 2), 2);
-    EXPECT_EQ(s4->dist(s4, 2), 0);
+    ASSERT_EQ(s4->dist(s1, 2), 1);
+    ASSERT_EQ(s4->dist(s2, 2), 1);
+    ASSERT_EQ(s4->dist(s3, 2), 2);
+    ASSERT_EQ(s4->dist(s4, 2), 0);
 
 }
 
@@ -317,25 +317,25 @@ TEST(sample, dist_cutoff_1){
 
     //Again, these values should not change due to cutoff
 
-    EXPECT_EQ(s1->dist(s1, 1), 0);
-    EXPECT_EQ(s1->dist(s2, 1), 1);
-    EXPECT_EQ(s1->dist(s3, 1), 1);
-    EXPECT_EQ(s1->dist(s4, 1), 1);
+    ASSERT_EQ(s1->dist(s1, 1), 0);
+    ASSERT_EQ(s1->dist(s2, 1), 1);
+    ASSERT_EQ(s1->dist(s3, 1), 1);
+    ASSERT_EQ(s1->dist(s4, 1), 1);
 
-    EXPECT_EQ(s2->dist(s1, 1), 1);
-    EXPECT_EQ(s2->dist(s2, 1), 0);
-    EXPECT_EQ(s2->dist(s3, 1), 1);
-    EXPECT_EQ(s2->dist(s4, 1), 1);
+    ASSERT_EQ(s2->dist(s1, 1), 1);
+    ASSERT_EQ(s2->dist(s2, 1), 0);
+    ASSERT_EQ(s2->dist(s3, 1), 1);
+    ASSERT_EQ(s2->dist(s4, 1), 1);
 
-    EXPECT_EQ(s3->dist(s1, 1), 1);
-    EXPECT_EQ(s3->dist(s2, 1), 1);
-    EXPECT_EQ(s3->dist(s3, 1), 0);
-    EXPECT_EQ(s3->dist(s4, 1), 2);
+    ASSERT_EQ(s3->dist(s1, 1), 1);
+    ASSERT_EQ(s3->dist(s2, 1), 1);
+    ASSERT_EQ(s3->dist(s3, 1), 0);
+    ASSERT_EQ(s3->dist(s4, 1), 2);
 
-    EXPECT_EQ(s4->dist(s1, 1), 1);
-    EXPECT_EQ(s4->dist(s2, 1), 1);
-    EXPECT_EQ(s4->dist(s3, 1), 2);
-    EXPECT_EQ(s4->dist(s4, 1), 0);
+    ASSERT_EQ(s4->dist(s1, 1), 1);
+    ASSERT_EQ(s4->dist(s2, 1), 1);
+    ASSERT_EQ(s4->dist(s3, 1), 2);
+    ASSERT_EQ(s4->dist(s4, 1), 0);
 
 }
 
@@ -351,25 +351,25 @@ TEST(sample, dist_cutoff_0){
     Sample* s3 = new Sample("cases/dummy/3.fasta", reference, mask);
     Sample* s4 = new Sample("cases/dummy/4.fasta", reference, mask);
 
-    EXPECT_EQ(s1->dist(s1, 0), 0);
-    EXPECT_EQ(s1->dist(s2, 0), 1);
-    EXPECT_EQ(s1->dist(s3, 0), 1);
-    EXPECT_EQ(s1->dist(s4, 0), 1);
+    ASSERT_EQ(s1->dist(s1, 0), 0);
+    ASSERT_EQ(s1->dist(s2, 0), 1);
+    ASSERT_EQ(s1->dist(s3, 0), 1);
+    ASSERT_EQ(s1->dist(s4, 0), 1);
 
-    EXPECT_EQ(s2->dist(s1, 0), 1);
-    EXPECT_EQ(s2->dist(s2, 0), 0);
-    EXPECT_EQ(s2->dist(s3, 0), 1);
-    EXPECT_EQ(s2->dist(s4, 0), 1);
+    ASSERT_EQ(s2->dist(s1, 0), 1);
+    ASSERT_EQ(s2->dist(s2, 0), 0);
+    ASSERT_EQ(s2->dist(s3, 0), 1);
+    ASSERT_EQ(s2->dist(s4, 0), 1);
 
-    EXPECT_EQ(s3->dist(s1, 0), 1);
-    EXPECT_EQ(s3->dist(s2, 0), 1);
-    EXPECT_EQ(s3->dist(s3, 0), 0);
-    EXPECT_EQ(s3->dist(s4, 0), 1);
+    ASSERT_EQ(s3->dist(s1, 0), 1);
+    ASSERT_EQ(s3->dist(s2, 0), 1);
+    ASSERT_EQ(s3->dist(s3, 0), 0);
+    ASSERT_EQ(s3->dist(s4, 0), 1);
 
-    EXPECT_EQ(s4->dist(s1, 0), 1);
-    EXPECT_EQ(s4->dist(s2, 0), 1);
-    EXPECT_EQ(s4->dist(s3, 0), 1);
-    EXPECT_EQ(s4->dist(s4, 0), 0);
+    ASSERT_EQ(s4->dist(s1, 0), 1);
+    ASSERT_EQ(s4->dist(s2, 0), 1);
+    ASSERT_EQ(s4->dist(s3, 0), 1);
+    ASSERT_EQ(s4->dist(s4, 0), 0);
 
 }
 
@@ -387,27 +387,27 @@ TEST(sample, dist_new){
     Sample* s5 = new Sample("cases/dummy/5.fasta", reference, mask);
 
     //Order shouldn't matter here
-    EXPECT_EQ(s1->dist(s5, 99999), s5->dist(s1, 99999));
-    EXPECT_EQ(s2->dist(s5, 99999), s5->dist(s2, 99999));
-    EXPECT_EQ(s3->dist(s5, 99999), s5->dist(s3, 99999));
-    EXPECT_EQ(s4->dist(s5, 99999), s5->dist(s4, 99999));
+    ASSERT_EQ(s1->dist(s5, 99999), s5->dist(s1, 99999));
+    ASSERT_EQ(s2->dist(s5, 99999), s5->dist(s2, 99999));
+    ASSERT_EQ(s3->dist(s5, 99999), s5->dist(s3, 99999));
+    ASSERT_EQ(s4->dist(s5, 99999), s5->dist(s4, 99999));
 
     //This is far away
-    EXPECT_EQ(s1->dist(s5, 99999), 79);
-    EXPECT_EQ(s2->dist(s5, 99999), 79);
-    EXPECT_EQ(s3->dist(s5, 99999), 77);
-    EXPECT_EQ(s4->dist(s5, 99999), 78);
+    ASSERT_EQ(s1->dist(s5, 99999), 79);
+    ASSERT_EQ(s2->dist(s5, 99999), 79);
+    ASSERT_EQ(s3->dist(s5, 99999), 77);
+    ASSERT_EQ(s4->dist(s5, 99999), 78);
 
     //Check that cutoffs work here too
-    EXPECT_EQ(s1->dist(s5, 70), 71);
-    EXPECT_EQ(s2->dist(s5, 70), 71);
-    EXPECT_EQ(s3->dist(s5, 70), 71);
-    EXPECT_EQ(s4->dist(s5, 70), 71);
+    ASSERT_EQ(s1->dist(s5, 70), 71);
+    ASSERT_EQ(s2->dist(s5, 70), 71);
+    ASSERT_EQ(s3->dist(s5, 70), 71);
+    ASSERT_EQ(s4->dist(s5, 70), 71);
 
-    EXPECT_EQ(s1->dist(s5, 20), 21);
-    EXPECT_EQ(s2->dist(s5, 20), 21);
-    EXPECT_EQ(s3->dist(s5, 20), 21);
-    EXPECT_EQ(s4->dist(s5, 20), 21);
+    ASSERT_EQ(s1->dist(s5, 20), 21);
+    ASSERT_EQ(s2->dist(s5, 20), 21);
+    ASSERT_EQ(s3->dist(s5, 20), 21);
+    ASSERT_EQ(s4->dist(s5, 20), 21);
 
 }
 
@@ -431,66 +431,66 @@ TEST(sample, change_reference){
     Sample* s4_2 = new Sample("cases/dummy/4.fasta", reference2, mask);
     Sample* s5_2 = new Sample("cases/dummy/5.fasta", reference2, mask);
 
-    EXPECT_EQ(s1->dist(s1, 99999), s1_2->dist(s1_2, 99999));
-    EXPECT_EQ(s1->dist(s2, 99999), s1_2->dist(s2_2, 99999));
-    EXPECT_EQ(s1->dist(s3, 99999), s1_2->dist(s3_2, 99999));
-    EXPECT_EQ(s1->dist(s4, 99999), s1_2->dist(s4_2, 99999));
-    EXPECT_EQ(s1->dist(s5, 99999), s1_2->dist(s5_2, 99999));
+    ASSERT_EQ(s1->dist(s1, 99999), s1_2->dist(s1_2, 99999));
+    ASSERT_EQ(s1->dist(s2, 99999), s1_2->dist(s2_2, 99999));
+    ASSERT_EQ(s1->dist(s3, 99999), s1_2->dist(s3_2, 99999));
+    ASSERT_EQ(s1->dist(s4, 99999), s1_2->dist(s4_2, 99999));
+    ASSERT_EQ(s1->dist(s5, 99999), s1_2->dist(s5_2, 99999));
 
-    EXPECT_EQ(s2->dist(s1, 99999), s2_2->dist(s1_2, 99999));
-    EXPECT_EQ(s2->dist(s2, 99999), s2_2->dist(s2_2, 99999));
-    EXPECT_EQ(s2->dist(s3, 99999), s2_2->dist(s3_2, 99999));
-    EXPECT_EQ(s2->dist(s4, 99999), s2_2->dist(s4_2, 99999));
-    EXPECT_EQ(s2->dist(s5, 99999), s2_2->dist(s5_2, 99999));
+    ASSERT_EQ(s2->dist(s1, 99999), s2_2->dist(s1_2, 99999));
+    ASSERT_EQ(s2->dist(s2, 99999), s2_2->dist(s2_2, 99999));
+    ASSERT_EQ(s2->dist(s3, 99999), s2_2->dist(s3_2, 99999));
+    ASSERT_EQ(s2->dist(s4, 99999), s2_2->dist(s4_2, 99999));
+    ASSERT_EQ(s2->dist(s5, 99999), s2_2->dist(s5_2, 99999));
 
-    EXPECT_EQ(s3->dist(s1, 99999), s3_2->dist(s1_2, 99999));
-    EXPECT_EQ(s3->dist(s2, 99999), s3_2->dist(s2_2, 99999));
-    EXPECT_EQ(s3->dist(s3, 99999), s3_2->dist(s3_2, 99999));
-    EXPECT_EQ(s3->dist(s4, 99999), s3_2->dist(s4_2, 99999));
-    EXPECT_EQ(s3->dist(s5, 99999), s3_2->dist(s5_2, 99999));
+    ASSERT_EQ(s3->dist(s1, 99999), s3_2->dist(s1_2, 99999));
+    ASSERT_EQ(s3->dist(s2, 99999), s3_2->dist(s2_2, 99999));
+    ASSERT_EQ(s3->dist(s3, 99999), s3_2->dist(s3_2, 99999));
+    ASSERT_EQ(s3->dist(s4, 99999), s3_2->dist(s4_2, 99999));
+    ASSERT_EQ(s3->dist(s5, 99999), s3_2->dist(s5_2, 99999));
 
-    EXPECT_EQ(s4->dist(s1, 99999), s4_2->dist(s1_2, 99999));
-    EXPECT_EQ(s4->dist(s2, 99999), s4_2->dist(s2_2, 99999));
-    EXPECT_EQ(s4->dist(s3, 99999), s4_2->dist(s3_2, 99999));
-    EXPECT_EQ(s4->dist(s4, 99999), s4_2->dist(s4_2, 99999));
-    EXPECT_EQ(s4->dist(s5, 99999), s4_2->dist(s5_2, 99999));
+    ASSERT_EQ(s4->dist(s1, 99999), s4_2->dist(s1_2, 99999));
+    ASSERT_EQ(s4->dist(s2, 99999), s4_2->dist(s2_2, 99999));
+    ASSERT_EQ(s4->dist(s3, 99999), s4_2->dist(s3_2, 99999));
+    ASSERT_EQ(s4->dist(s4, 99999), s4_2->dist(s4_2, 99999));
+    ASSERT_EQ(s4->dist(s5, 99999), s4_2->dist(s5_2, 99999));
 
-    EXPECT_EQ(s5->dist(s1, 99999), s5_2->dist(s1_2, 99999));
-    EXPECT_EQ(s5->dist(s2, 99999), s5_2->dist(s2_2, 99999));
-    EXPECT_EQ(s5->dist(s3, 99999), s5_2->dist(s3_2, 99999));
-    EXPECT_EQ(s5->dist(s4, 99999), s5_2->dist(s4_2, 99999));
-    EXPECT_EQ(s5->dist(s5, 99999), s5_2->dist(s5_2, 99999));
+    ASSERT_EQ(s5->dist(s1, 99999), s5_2->dist(s1_2, 99999));
+    ASSERT_EQ(s5->dist(s2, 99999), s5_2->dist(s2_2, 99999));
+    ASSERT_EQ(s5->dist(s3, 99999), s5_2->dist(s3_2, 99999));
+    ASSERT_EQ(s5->dist(s4, 99999), s5_2->dist(s4_2, 99999));
+    ASSERT_EQ(s5->dist(s5, 99999), s5_2->dist(s5_2, 99999));
 
 
-    EXPECT_EQ(s1->dist(s1, 1), s1_2->dist(s1_2, 1));
-    EXPECT_EQ(s1->dist(s2, 1), s1_2->dist(s2_2, 1));
-    EXPECT_EQ(s1->dist(s3, 1), s1_2->dist(s3_2, 1));
-    EXPECT_EQ(s1->dist(s4, 1), s1_2->dist(s4_2, 1));
-    EXPECT_EQ(s1->dist(s5, 1), s1_2->dist(s5_2, 1));
+    ASSERT_EQ(s1->dist(s1, 1), s1_2->dist(s1_2, 1));
+    ASSERT_EQ(s1->dist(s2, 1), s1_2->dist(s2_2, 1));
+    ASSERT_EQ(s1->dist(s3, 1), s1_2->dist(s3_2, 1));
+    ASSERT_EQ(s1->dist(s4, 1), s1_2->dist(s4_2, 1));
+    ASSERT_EQ(s1->dist(s5, 1), s1_2->dist(s5_2, 1));
 
-    EXPECT_EQ(s2->dist(s1, 1), s2_2->dist(s1_2, 1));
-    EXPECT_EQ(s2->dist(s2, 1), s2_2->dist(s2_2, 1));
-    EXPECT_EQ(s2->dist(s3, 1), s2_2->dist(s3_2, 1));
-    EXPECT_EQ(s2->dist(s4, 1), s2_2->dist(s4_2, 1));
-    EXPECT_EQ(s2->dist(s5, 1), s2_2->dist(s5_2, 1));
+    ASSERT_EQ(s2->dist(s1, 1), s2_2->dist(s1_2, 1));
+    ASSERT_EQ(s2->dist(s2, 1), s2_2->dist(s2_2, 1));
+    ASSERT_EQ(s2->dist(s3, 1), s2_2->dist(s3_2, 1));
+    ASSERT_EQ(s2->dist(s4, 1), s2_2->dist(s4_2, 1));
+    ASSERT_EQ(s2->dist(s5, 1), s2_2->dist(s5_2, 1));
 
-    EXPECT_EQ(s3->dist(s1, 1), s3_2->dist(s1_2, 1));
-    EXPECT_EQ(s3->dist(s2, 1), s3_2->dist(s2_2, 1));
-    EXPECT_EQ(s3->dist(s3, 1), s3_2->dist(s3_2, 1));
-    EXPECT_EQ(s3->dist(s4, 1), s3_2->dist(s4_2, 1));
-    EXPECT_EQ(s3->dist(s5, 1), s3_2->dist(s5_2, 1));
+    ASSERT_EQ(s3->dist(s1, 1), s3_2->dist(s1_2, 1));
+    ASSERT_EQ(s3->dist(s2, 1), s3_2->dist(s2_2, 1));
+    ASSERT_EQ(s3->dist(s3, 1), s3_2->dist(s3_2, 1));
+    ASSERT_EQ(s3->dist(s4, 1), s3_2->dist(s4_2, 1));
+    ASSERT_EQ(s3->dist(s5, 1), s3_2->dist(s5_2, 1));
 
-    EXPECT_EQ(s4->dist(s1, 1), s4_2->dist(s1_2, 1));
-    EXPECT_EQ(s4->dist(s2, 1), s4_2->dist(s2_2, 1));
-    EXPECT_EQ(s4->dist(s3, 1), s4_2->dist(s3_2, 1));
-    EXPECT_EQ(s4->dist(s4, 1), s4_2->dist(s4_2, 1));
-    EXPECT_EQ(s4->dist(s5, 1), s4_2->dist(s5_2, 1));
+    ASSERT_EQ(s4->dist(s1, 1), s4_2->dist(s1_2, 1));
+    ASSERT_EQ(s4->dist(s2, 1), s4_2->dist(s2_2, 1));
+    ASSERT_EQ(s4->dist(s3, 1), s4_2->dist(s3_2, 1));
+    ASSERT_EQ(s4->dist(s4, 1), s4_2->dist(s4_2, 1));
+    ASSERT_EQ(s4->dist(s5, 1), s4_2->dist(s5_2, 1));
 
-    EXPECT_EQ(s5->dist(s1, 1), s5_2->dist(s1_2, 1));
-    EXPECT_EQ(s5->dist(s2, 1), s5_2->dist(s2_2, 1));
-    EXPECT_EQ(s5->dist(s3, 1), s5_2->dist(s3_2, 1));
-    EXPECT_EQ(s5->dist(s4, 1), s5_2->dist(s4_2, 1));
-    EXPECT_EQ(s5->dist(s5, 1), s5_2->dist(s5_2, 1));
+    ASSERT_EQ(s5->dist(s1, 1), s5_2->dist(s1_2, 1));
+    ASSERT_EQ(s5->dist(s2, 1), s5_2->dist(s2_2, 1));
+    ASSERT_EQ(s5->dist(s3, 1), s5_2->dist(s3_2, 1));
+    ASSERT_EQ(s5->dist(s4, 1), s5_2->dist(s4_2, 1));
+    ASSERT_EQ(s5->dist(s5, 1), s5_2->dist(s5_2, 1));
 }
 
 
@@ -519,11 +519,11 @@ TEST(sample, save_load){
     Sample* s4_save = readSample("cases/dummy/saves/uuid4");
     Sample* s5_save = readSample("cases/dummy/saves/uuid5");
 
-    EXPECT_EQ(*s1, *s1_save);
-    EXPECT_EQ(*s2, *s2_save);
-    EXPECT_EQ(*s3, *s3_save);
-    EXPECT_EQ(*s4, *s4_save);
-    EXPECT_EQ(*s5, *s5_save);
+    ASSERT_EQ(*s1, *s1_save);
+    ASSERT_EQ(*s2, *s2_save);
+    ASSERT_EQ(*s3, *s3_save);
+    ASSERT_EQ(*s4, *s4_save);
+    ASSERT_EQ(*s5, *s5_save);
 }
 
 
