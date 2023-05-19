@@ -13,6 +13,7 @@ echo
 #Actually run the tests
 echo "Testing..."
 cd test
+mkdir -p cases/dummy/saves
 ./run_tests
 cd ..
 echo "Done!"
