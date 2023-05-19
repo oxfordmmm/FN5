@@ -460,5 +460,70 @@ TEST(sample, change_reference){
     EXPECT_EQ(s5->dist(s3, 99999), s5_2->dist(s3_2, 99999));
     EXPECT_EQ(s5->dist(s4, 99999), s5_2->dist(s4_2, 99999));
     EXPECT_EQ(s5->dist(s5, 99999), s5_2->dist(s5_2, 99999));
+
+
+    EXPECT_EQ(s1->dist(s1, 1), s1_2->dist(s1_2, 1));
+    EXPECT_EQ(s1->dist(s2, 1), s1_2->dist(s2_2, 1));
+    EXPECT_EQ(s1->dist(s3, 1), s1_2->dist(s3_2, 1));
+    EXPECT_EQ(s1->dist(s4, 1), s1_2->dist(s4_2, 1));
+    EXPECT_EQ(s1->dist(s5, 1), s1_2->dist(s5_2, 1));
+
+    EXPECT_EQ(s2->dist(s1, 1), s2_2->dist(s1_2, 1));
+    EXPECT_EQ(s2->dist(s2, 1), s2_2->dist(s2_2, 1));
+    EXPECT_EQ(s2->dist(s3, 1), s2_2->dist(s3_2, 1));
+    EXPECT_EQ(s2->dist(s4, 1), s2_2->dist(s4_2, 1));
+    EXPECT_EQ(s2->dist(s5, 1), s2_2->dist(s5_2, 1));
+
+    EXPECT_EQ(s3->dist(s1, 1), s3_2->dist(s1_2, 1));
+    EXPECT_EQ(s3->dist(s2, 1), s3_2->dist(s2_2, 1));
+    EXPECT_EQ(s3->dist(s3, 1), s3_2->dist(s3_2, 1));
+    EXPECT_EQ(s3->dist(s4, 1), s3_2->dist(s4_2, 1));
+    EXPECT_EQ(s3->dist(s5, 1), s3_2->dist(s5_2, 1));
+
+    EXPECT_EQ(s4->dist(s1, 1), s4_2->dist(s1_2, 1));
+    EXPECT_EQ(s4->dist(s2, 1), s4_2->dist(s2_2, 1));
+    EXPECT_EQ(s4->dist(s3, 1), s4_2->dist(s3_2, 1));
+    EXPECT_EQ(s4->dist(s4, 1), s4_2->dist(s4_2, 1));
+    EXPECT_EQ(s4->dist(s5, 1), s4_2->dist(s5_2, 1));
+
+    EXPECT_EQ(s5->dist(s1, 1), s5_2->dist(s1_2, 1));
+    EXPECT_EQ(s5->dist(s2, 1), s5_2->dist(s2_2, 1));
+    EXPECT_EQ(s5->dist(s3, 1), s5_2->dist(s3_2, 1));
+    EXPECT_EQ(s5->dist(s4, 1), s5_2->dist(s4_2, 1));
+    EXPECT_EQ(s5->dist(s5, 1), s5_2->dist(s5_2, 1));
 }
+
+
+/**
+* @brief Ensure that the loaded saves are the same as the inital samples
+*/
+TEST(sample, save_load){
+    string reference = load_reference("cases/dummy/reference.fasta");
+    unordered_set<int> mask = load_mask("cases/dummy/mask.txt");
+
+    Sample* s1 = new Sample("cases/dummy/1.fasta", reference, mask);
+    Sample* s2 = new Sample("cases/dummy/2.fasta", reference, mask);
+    Sample* s3 = new Sample("cases/dummy/3.fasta", reference, mask);
+    Sample* s4 = new Sample("cases/dummy/4.fasta", reference, mask);
+    Sample* s5 = new Sample("cases/dummy/5.fasta", reference, mask);
+
+    save("cases/dummy/saves", s1);
+    save("cases/dummy/saves", s2);
+    save("cases/dummy/saves", s3);
+    save("cases/dummy/saves", s4);
+    save("cases/dummy/saves", s5);
+
+    Sample* s1_save = readSample("cases/dummy/saves/uuid1");
+    Sample* s2_save = readSample("cases/dummy/saves/uuid2");
+    Sample* s3_save = readSample("cases/dummy/saves/uuid3");
+    Sample* s4_save = readSample("cases/dummy/saves/uuid4");
+    Sample* s5_save = readSample("cases/dummy/saves/uuid5");
+
+    EXPECT_EQ(*s1, *s1_save);
+    EXPECT_EQ(*s2, *s2_save);
+    EXPECT_EQ(*s3, *s3_save);
+    EXPECT_EQ(*s4, *s4_save);
+    EXPECT_EQ(*s5, *s5_save);
+}
+
 

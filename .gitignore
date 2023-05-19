@@ -56,6 +56,7 @@ build/*
 !**/CMakeLists.txt
 !test/**/*.txt
 test/output/*
+test/cases/dummy/saves
 
 
 !**/.gitkeep

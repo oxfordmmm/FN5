@@ -83,6 +83,16 @@ Sample::Sample(unordered_set<int> a, unordered_set<int> c, unordered_set<int> g,
     N = n;
 }
 
+bool Sample::operator== (const Sample &s2) const{
+    bool check =  (uuid == s2.uuid);
+    check = check && (A == s2.A);
+    check = check && (C == s2.C);
+    check = check && (G == s2.G);
+    check = check && (T == s2.T);
+    check = check && (N == s2.N);
+    return check;
+}
+
 int Sample::dist(Sample* sample, int cutoff){
     unordered_set<int> acc;
     acc = dist_x(A, N, sample->A, sample->N, acc, cutoff);

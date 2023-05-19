@@ -74,6 +74,14 @@ class Sample{
         Sample(unordered_set<int> a, unordered_set<int> c, unordered_set<int> g, unordered_set<int> t, unordered_set<int> n);
 
         /**
+        * @brief Provide a custom implementation of `==` to allow equality checking
+        *
+        * @param s2 The other sample
+        * @return true when the samples hold the same data
+        */
+        bool operator== (const Sample &s2) const;
+
+        /**
          * @brief Find the SNP distance between this sample and another
          * 
          * @param sample Sample to compare to

@@ -34,6 +34,17 @@ With binary saves:
 ./build.sh
 ```
 
+## Run tests
+A unit test suite is provided, as well as a set of end-to-end tests
+```
+#Compile and run the unit tests
+./unit-test.sh
+
+#Run end-to-end tests and ensure expected output
+./test/test.sh
+python -m pytest -vv
+```
+
 ## Parse some FASTA files
 Parse some FASTA files into saves. Pass a path to a line separated file of FASTA paths. Currently only supporting upper case nucleotides. This is multithreaded, so can be performed efficiently.
 
