@@ -198,6 +198,10 @@ void do_comparisons_from_disk(vector<string> paths, Sample* sample, int cutoff){
     vector<tuple<string, string, int>> distances;
     for(int i=0;i<paths.size();i++){
         Sample *s2 = readSample(paths.at(i));
+        if(sample->uuid == s2->uuid){
+            //These are the same sample so skip...
+            continue;
+        }
         int dist = sample->dist(s2, cutoff);
         if(dist > cutoff){
             //Further than cutoff so ignore

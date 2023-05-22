@@ -296,7 +296,7 @@ TEST(comparisons, add_sample){
     in.close();
 
     //Expected data
-    vector<string> expected = {"uuid5 uuid1 79", "uuid5 uuid2 79", "uuid5 uuid3 77", "uuid5 uuid4 78", "uuid5 uuid5 0"};
+    vector<string> expected = {"uuid5 uuid1 79", "uuid5 uuid2 79", "uuid5 uuid3 77", "uuid5 uuid4 78"};
     ASSERT_TRUE(vectors_equal(expected, actual));
 }
 
@@ -438,7 +438,6 @@ TEST(comparisons, compute_loaded){
     string reference = load_reference("cases/dummy/reference.fasta");
     unordered_set<int> mask = load_mask("cases/dummy/mask.txt");
 
-    //Deliberately not using sample 4, to ensure the list reading works
     Sample* s1 = new Sample("cases/dummy/1.fasta", reference, mask);
     Sample* s2 = new Sample("cases/dummy/2.fasta", reference, mask);
     Sample* s3 = new Sample("cases/dummy/3.fasta", reference, mask);
