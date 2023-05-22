@@ -4,7 +4,7 @@ set -e
 
 #Make sure binaries are built
 echo "Building..."
-./build.sh
+./build_tests.sh
 echo "Done!"
 
 echo

@@ -5,12 +5,12 @@ set -e
 mkdir -p build
 cd build
 
-#Compile fn5
+#Compile fn5 and test runner
 [ -e CMakeCache.txt ] && rm CMakeCache.txt
-cmake ../src
+cmake ../test
 make
 
-#Move fn5 to main level
-mv fn5 ..
+#Move test runner to test
+mv run_tests ../test
 cd ..
 
