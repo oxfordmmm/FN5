@@ -38,7 +38,7 @@ echo compressing
 tar czf $output saves
 echo
 echo uploading
-curl -X PUT --data-binary "@$(pwd)/$output" $bucket/$output
+curl -s -X PUT --data-binary "@$(pwd)/$output" $bucket/$output
 #<><><><><><>
 
 #Do something with comparions.txt here
