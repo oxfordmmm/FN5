@@ -1,9 +1,16 @@
 from db.model import *
 import subprocess
 import shlex
-
+import argparse
 
 def add_dist_to_session(session, dist, seen):
+    '''Add a distance to the table if not already in there
+
+    Args:
+        session (SQLAlchemy.session): Session object
+        dist (Distance): SQLAlchemy object for the row to add
+        seen (set): Set of already seen guids
+    '''
     #Add to the DB if this doesn't already exist
     if (dist.guid1, dist.guid2) in seen:
         #Already seen so skip
@@ -29,6 +36,9 @@ def add_nearest_to_session(session, guid, nearest, dist, seen, seen_guids):
 
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--sample", required=False, default=None, help="Path to a FASTA file to add")
+    options = parser.parse_args()
     conn, engine = get_engine()
 
     #Add lock to DB
@@ -42,7 +52,12 @@ if __name__ == "__main__":
 
         #~~~~~~~~~~~~~~~~~Actually compute~~~~~~~~~~~~~~~~~~~~~~~~
         start = time.time()
-        output = subprocess.check_output(shlex.split("./pipeline-script.sh")).decode("utf-8").strip()
+        #If a sample has been requested to be added, add it
+        if options.sample is not None:
+            output = subprocess.check_output(shlex.split(f"./add-sample.sh {options.sample}")).decode("utf-8").strip()
+        else:
+            #Otherwise, default to the list of samples
+            output = subprocess.check_output(shlex.split("./pipeline-script.sh")).decode("utf-8").strip()
         print(output)
         print("Computed in: ", time.time()-start)
 
@@ -52,7 +67,7 @@ if __name__ == "__main__":
         #Read the comparisons file
         with open("comparisons.txt") as f:
             comparisons = [line.strip().split(" ") for line in f if line.strip() != ""]
-
+        print(f"Found {len(comparisons)} distances!")
         dists = []
         guids = set([g1 for g1, g2, d in comparisons] + [g2 for g1, g2, d in comparisons])
         nearest = {guid : (float('inf'), None) for guid in guids}
