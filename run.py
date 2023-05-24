@@ -109,7 +109,8 @@ if __name__ == "__main__":
         print("Added in: ", time.time() - start)
         #~~~~~~~~~~~~~~~~~Unlock the DB to allow others to run~~~~~~~~~~~~~~~~~~~~~~~~
         unlock(s, lock)
-    except:
+    except Exception as e:
         #Any case this dies, clean up after yourself
         unlock(s, lock)
+        raise e
 

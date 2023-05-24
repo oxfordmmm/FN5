@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -e
+
 #Use environment vars to load the secret bucket link
 source .env
 
