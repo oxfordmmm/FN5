@@ -10,8 +10,6 @@
 
 
 using namespace std;
-namespace fs = std::filesystem;
-
 
 /**
 * @brief A mutex lock used for multi-threaded behaviours

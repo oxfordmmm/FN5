@@ -9,7 +9,12 @@ project (fn5)
 file(GLOB src "*.cpp")
 
 #Add all appropiate C++ files for running tests
-file(GLOB tests "*.cpp" "../tests/testrunner.cpp")
+file(GLOB tests 
+"argparse.cpp" 
+"sample.cpp"
+"comparisons.cpp"
+"../test/test_runner.cpp"
+)
 
 include(FetchContent)
 FetchContent_Declare(
@@ -27,7 +32,7 @@ INCLUDE_DIRECTORIES(../src/include)
 
 INCLUDE_DIRECTORIES(.)
 
-INCLUDE_DIRECTORIES(../tests)
+INCLUDE_DIRECTORIES(../test)
 
 add_executable(
   run_tests

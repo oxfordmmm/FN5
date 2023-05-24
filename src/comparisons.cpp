@@ -1,5 +1,7 @@
 #include "include/comparisons.hpp"
 
+namespace fs = std::filesystem;
+
 mutex mutex_lock;
 
 string save_dir = "saves";

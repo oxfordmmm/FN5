@@ -31,6 +31,7 @@
 *.out
 *.app
 fn5
+test/run_tests
 
 #Saved data
 saves/*
@@ -53,6 +54,8 @@ build/*
 
 !requirements.txt
 !**/CMakeLists.txt
+test/output/*
+test/cases/dummy/saves
 
 
 !**/.gitkeep
