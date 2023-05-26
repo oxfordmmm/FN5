@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/zsh
 
 set -e
 
@@ -17,7 +17,7 @@ echo Getting from bucket
 curl -SsL $bucket/$latest > $latest
 echo
 echo untaring
-tar xzf $latest
+tar --use-compress-program=pigz -xf $latest
 echo
 #<><><><><><>
 
@@ -35,7 +35,7 @@ echo
 #   saves/* --> <bucket>
 output="$(date +%s).tar.gz"
 echo compressing
-tar czf $output saves
+tar --use-compress-program=pigz -cf $output saves
 echo
 echo uploading
 curl -s -X PUT --data-binary "@$(pwd)/$output" $bucket/$output
