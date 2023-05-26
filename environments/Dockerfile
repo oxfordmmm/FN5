@@ -12,7 +12,7 @@ RUN apt install -y curl jq
 
 RUN git clone https://github.com/oxfordmmm/FN5.git && \
     cd FN5 && \
-    git checkout refactor-cmake && \ 
+    git checkout testing-docker && \ 
     bash build.sh && \
     cp fn5 /usr/bin/fn5 && \
     pip install -r requirements.txt
