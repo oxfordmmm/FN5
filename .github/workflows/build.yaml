@@ -1,0 +1,35 @@
+name: Build FN5 images
+#Based on the docker build action for SARS-CoV2_workflows
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+jobs:
+  build-docker:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set release version
+        run: echo "RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
+      -
+        name: Login to OCR
+        uses: docker/login-action@v1 
+        with:
+          registry: lhr.ocir.io
+          username: ${{ secrets.OCR_USERNAME }}
+          password: ${{ secrets.OCR_TOKEN }}
+      -
+        name: Build and push
+        id: docker_build
+        uses: docker/build-push-action@v2
+        with:
+          file: environments/Dockerfile
+          tags: |
+            lhr.ocir.io/${{secrets.OCR_NAMESPACE}}/oxfordmmm/fn5:latest
+            lhr.ocir.io/${{secrets.OCR_NAMESPACE}}/oxfordmmm/fn5:${{env.RELEASE_VERSION}}
+          push: true
+          no-cache: true
+      -
+        name: Docker digest
+        run: echo ${{ steps.docker_build.outputs.digest }}

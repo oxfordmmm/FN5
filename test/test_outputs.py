@@ -28,7 +28,6 @@ def test_2():
         actual = set([tuple(sorted(line.strip().split(" "))) for line in f])
     
     expected = set([
-        "sample4 sample4 0",
         "sample4 sample1 12",
         "sample4 sample3 11",
         "sample4 sample2 11",

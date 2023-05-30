@@ -74,7 +74,7 @@ def get_engine():
         SQLAlchemy connection, SQLAlchemy engine
     '''
     #Connect to DB
-    engine = db.create_engine(os.getenv('DB_PATH'))
+    engine = db.create_engine(os.getenv('DB_PATH'), connect_args={'connect_timeout': 30})
     
     #Create tables if don't already exist
     Base.metadata.create_all(engine)

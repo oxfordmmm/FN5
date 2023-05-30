@@ -5,6 +5,8 @@ set -e
 #Use environment vars to load the secret bucket link
 source .env
 
+fasta=$1
+
 #Pull the existing saves from a bucket here
 #   <bucket> --> saves 
 #Get the latest saves from the bucket
@@ -22,7 +24,10 @@ echo
 
 #Get comparisons with the new ones
 echo comparing
-./fn5 --add_many $input_paths --cutoff 20000 > comparisons.txt
+#Ensure file exists and is empty beforehand
+[ -e comparisons.txt ] && rm comparisons.txt
+touch comparisons.txt
+./fn5 --add $fasta --cutoff 20 --output_file comparisons.txt
 echo
 #<><><><><><>
 
@@ -33,7 +38,7 @@ echo compressing
 tar czf $output saves
 echo
 echo uploading
-curl -X PUT --data-binary "@$(pwd)/$output" $bucket/$output
+curl -s -X PUT --data-binary "@$(pwd)/$output" $bucket/$output
 #<><><><><><>
 
 #Do something with comparions.txt here
