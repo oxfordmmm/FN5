@@ -121,6 +121,10 @@ vector<Sample*> bulk_load(string path, string reference, unordered_set<int> mask
     vector<string> filepaths;
     char ch;
     fstream pathsFile(path, fstream::in);
+    if(!pathsFile.good()){
+        cout << "Invalid path to line separated paths: " << path << endl;
+        exit(1);
+    }
     string f;
     while(pathsFile >> noskipws >> ch){
         if(ch == '\n'){
@@ -310,6 +314,10 @@ void add_many(string path, string reference, unordered_set<int> mask, int cutoff
     char ch;
     string acc;
     fstream fin(path, fstream::in);
+        if(!fin.good()){
+        cout << "Invalid path to line separated paths: " << path << endl;
+        exit(1);
+    }
     while (fin >> noskipws >> ch) {
         if(ch == '\n'){
             if(acc.find_first_not_of(' ') != string::npos){
