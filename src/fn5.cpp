@@ -75,4 +75,8 @@ int main(int nargs, const char* args_[]){
         compare_row(args.at("--compare_row"), reference, mask, cutoff);
     }
 
+    if(check_flag(args, "--reference_compress")){
+        reference_compress(args.at("--reference_compress"), reference, mask);
+    }
+
 }

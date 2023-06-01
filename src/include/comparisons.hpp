@@ -159,3 +159,13 @@ void compare_row(string path, string reference, unordered_set<int> mask, int cut
 * @param samples Loaded samples
 */
 void compute_loaded(int cutoff, vector<Sample*> samples);
+
+/**
+* @brief Reference compress a single sample
+*
+* @param path Path to a FASTA file
+* @param reference Reference nucleotides
+* @param mask Exclusion mask
+*/
+void reference_compress(string path, string reference, unordered_set<int> mask);
+
