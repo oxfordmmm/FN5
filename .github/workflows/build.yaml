@@ -1,9 +1,11 @@
-name: Build FN5 images
+name: Build Docker
 #Based on the docker build action for SARS-CoV2_workflows
 on:
   push:
     tags:
       - 'v*.*.*'
+    branches:
+      - "testing-docker"
 
 jobs:
   build-docker:

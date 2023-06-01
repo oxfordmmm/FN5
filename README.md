@@ -1,6 +1,9 @@
 # Find Neighbour 5
 Spiritual successor to [Find Neighbour 4](https://github.com/davidhwyllie/findNeighbour4) - continuing the work of David Wyllie.
 
+[![Tests](https://github.com/oxfordmmm/FN5/actions/workflows/test.yaml/badge.svg)](https://github.com/oxfordmmm/FN5/actions/workflows/test.yaml)
+[![Build FN5 images](https://github.com/oxfordmmm/FN5/actions/workflows/build.yaml/badge.svg?branch=testing-docker)](https://github.com/oxfordmmm/FN5/actions/workflows/build.yaml)
+
 SNP matrix generation with caching to disk to allow fast reloading.
 A test set of 1286 cryptic samples was used. Once parsed and saved, these can be read into memory (on a single thread) in 0.5s - scaling linearly
 
