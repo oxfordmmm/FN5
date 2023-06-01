@@ -4,8 +4,6 @@ on:
   push:
     tags:
       - 'v*.*.*'
-    branches:
-      - "testing-docker"
 
 jobs:
   build-docker:
