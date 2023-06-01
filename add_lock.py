@@ -30,7 +30,6 @@ def add_to_batch(engine, g) -> None:
     #Check there isn't already this sample in a batch
     q = session.query(Batch).filter(Batch.guid == g).all()
     if len(q) != 0:
-        print("GUID already in batch!")
         return
 
     b = Batch(guid=g)
