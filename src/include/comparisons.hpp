@@ -169,3 +169,10 @@ void compute_loaded(int cutoff, vector<Sample*> samples);
 */
 void reference_compress(string path, string reference, unordered_set<int> mask);
 
+/**
+* @brief Add a batch specified by sample saves in a given dir
+*
+* @param path Path to a directory of the saves to add
+* @param cutoff Cutoff to use
+*/
+void add_batch(string path, int cutoff);

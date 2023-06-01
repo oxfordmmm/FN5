@@ -79,4 +79,8 @@ int main(int nargs, const char* args_[]){
         reference_compress(args.at("--reference_compress"), reference, mask);
     }
 
+    if(check_flag(args, "--add_batch")){
+        add_batch(args.at("--add_batch"), cutoff);
+    }
+
 }
