@@ -43,6 +43,7 @@ class Distances(Base):
 
 class Closest(Base):
     '''Store the closest neighbour, regardless of cutoff
+    **NOT USED**
     '''
     __tablename__ = "closest"
 
@@ -66,6 +67,15 @@ class Lock(Base):
     def __repr__(self) -> str:
         return f"Lock(ID={self.id_}, start={self.start}, thread_id={self.thread_id}, done={self.done})"
 
+class Batch(Base):
+    '''For automatic batching of samples
+    '''
+    __tablename__ = "batch"
+
+    guid: Mapped[str] = mapped_column(String(100), primary_key=True)
+
+    def __repr(self) -> str:
+        return f"Batched GUID {self.guid}"
 
 def get_engine():
     '''Get the DB engine connection
@@ -120,6 +130,29 @@ def get_lock(engine, lock: Lock) -> None:
             time.sleep(1)
         session.close()
 
+def get_lock_(engine, lock_id: int) -> None:
+    '''Wait until the DB is available
+
+    Args:
+        engine (SQLAlchemy engine): DB engine
+        lock_id (int): The corresponding thread_id for this record
+    '''
+    #Wait for your turn
+    locked = True
+    while locked:
+        #Get the next valid lock in the table
+        session = create_session(engine)
+        q = session.query(Lock).\
+            filter(Lock.done == False).\
+            filter(Lock.start + 3600 > time.time()).\
+            order_by(Lock.id_.asc()).first()
+        if q.thread_id == lock_id:
+            #We're next!
+            locked = False
+            return
+        else:
+            time.sleep(1)
+        session.close()
 
 
 def unlock(session, lock: Lock):
@@ -133,3 +166,22 @@ def unlock(session, lock: Lock):
     session.delete(lock)
     session.commit()
     session.close()
+
+def unlock_(engine, lock_id: int):
+    '''Find the record associated with this thread ID and delete it
+
+    Args:
+        engine (SQLAlchemy.engine): DB engine
+        lock_id (int): Thread ID of this lock
+    '''
+    session = create_session(engine)
+    q = session.query(Lock).filter(Lock.thread_id == lock_id).all()
+    if len(q) == 0:
+        #Not found so complain
+        session.close()
+        raise Exception(f"Lock {lock_id} not found in DB!")
+    else:
+        lock = q[0]
+        session.delete(lock)
+        session.commit()
+        session.close()
