@@ -29,6 +29,8 @@ if __name__ == "__main__":
             guids = [line.strip() for line in f]
         for g in guids:
             b = session.query(Batch).filter(Batch.guid == g).first()
-            session.delete(b)
+            if b is not None:
+                #Don't try and delete if it doesn't exist
+                session.delete(b)
         session.commit()
         session.close()
