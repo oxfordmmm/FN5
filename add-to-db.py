@@ -46,4 +46,7 @@ if __name__ == "__main__":
 
     for d in dists:
         add_dist_to_session(session, d, seen)
+    
+    session.commit()
+    session.close()
 
