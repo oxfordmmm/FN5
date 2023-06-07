@@ -18,6 +18,10 @@ int main(int nargs, const char* args_[]){
     //Check to see if values are supplied or we need to use default
     if(check_flag(args, "--threads")){
         thread_count = stoi(args.at("--threads"));
+        //Make sure we have >=1 thread to avoid issues
+        if(thread_count < 1){
+            thread_count = 1;
+        }
     }
     if(check_flag(args, "--saves_dir")){
         save_dir = args.at("--saves_dir");
