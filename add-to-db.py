@@ -14,10 +14,8 @@ def add_dist_to_session(session, dist, seen):
     #Add to the DB if this doesn't already exist
     if (dist.guid1, dist.guid2) in seen:
         #Already seen so skip
-        print("Already seen: ", dist)
         return
     else:
-        print("Adding: ", dist)
         session.add(dist)
         seen.add((dist.guid1, dist.guid2))
 
