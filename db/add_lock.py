@@ -2,7 +2,7 @@
 Else, add the sample to the batch table
 '''
 import argparse
-from db.model import *
+from model import *
 
 def check_locks(engine) -> int:
     '''Check how many locks are in the table

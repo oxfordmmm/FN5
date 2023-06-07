@@ -1,7 +1,7 @@
 '''Parse `comparisons.txt` and enter into db
 '''
 import argparse
-from db.model import *
+from model import *
 
 def add_dist_to_session(session, dist, seen):
     '''Add a distance to the table if not already in there

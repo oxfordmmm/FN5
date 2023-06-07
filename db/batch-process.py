@@ -1,7 +1,7 @@
 '''Handle getting GUIDs from batches, and deleting once completed
 '''
 import argparse
-from db.model import *
+from model import *
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()

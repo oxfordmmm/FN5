@@ -1,7 +1,7 @@
-'''Just wait until this thread's lock is the next lock
+'''Release the lock from the DB
 '''
 import argparse
-from db.model import *
+from model import *
 
 
 if __name__ == "__main__":
@@ -11,4 +11,4 @@ if __name__ == "__main__":
 
     conn, engine = get_engine()
 
-    get_lock_(engine, options.lock)
+    unlock_(engine, options.lock)
