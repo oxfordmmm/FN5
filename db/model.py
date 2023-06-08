@@ -41,19 +41,6 @@ class Distances(Base):
     def __repr__(self) -> str:
         return f"Distance between {self.guid1} and {self.guid2} is {self.dist}"
 
-class Closest(Base):
-    '''Store the closest neighbour, regardless of cutoff
-    **NOT USED**
-    '''
-    __tablename__ = "closest"
-
-    guid: Mapped[str] = mapped_column(String(100), primary_key=True)
-    closest: Mapped[str] = mapped_column(String(100))
-    dist: Mapped[int] = mapped_column(Integer())
-
-    def __repr__(self) -> str:
-        return f"Nearest neighbour to {self.guid} is {self.closest}. {self.dist} SNPs away"
-
 class Lock(Base):
     '''For locking the DB during execution
     '''
