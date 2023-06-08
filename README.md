@@ -124,6 +124,10 @@ Run `python run.py`
 ### Query database
 Run `python query.py --guid <guid here>`
 
+### Quality control
+FN5 checks that samples are at least 50% ACGT before allowing them to be saved.
+Any samples which produce `||QC_FAIL: <guid>||` have failed this check and will not be saved!
+
 ## TODO:
 * Lower case FASTA support
 

@@ -52,6 +52,12 @@ class Sample{
         */
         string uuid;
 
+        /**
+        * @brief Whether a sample has passed QC (N% < 50%). If this is false, the sample
+                is not saved, so only vald when instanciated from FASTA
+        */
+        bool qc_pass;
+
 
         /**
          * @brief Sample constructor. Reference compresses a given sample

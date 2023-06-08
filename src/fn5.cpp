@@ -59,6 +59,10 @@ int main(int nargs, const char* args_[]){
         return 0;
     }
 
+    if(check_flag(args, "--add_batch")){
+        add_batch(args.at("--add_batch"), cutoff);
+    }
+    
     string reference = load_reference(ref_genome_path);
     
     unordered_set<int> mask = load_mask(exclude_mask_path);
@@ -81,10 +85,6 @@ int main(int nargs, const char* args_[]){
 
     if(check_flag(args, "--reference_compress")){
         reference_compress(args.at("--reference_compress"), reference, mask);
-    }
-
-    if(check_flag(args, "--add_batch")){
-        add_batch(args.at("--add_batch"), cutoff);
     }
 
 }

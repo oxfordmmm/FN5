@@ -77,6 +77,11 @@ Sample::Sample(string filename, string reference, unordered_set<int> mask){
         i++;
     }
     fin.close();
+
+    //For a basic QC check we want to ensure that <50% of the sample is N
+    //Inherently ref has no Ns, so total Ns == this->N.size()
+    float total_size = reference.size();
+    qc_pass = N.size() / total_size < 0.5;
 }
 
 Sample::Sample(unordered_set<int> a, unordered_set<int> c, unordered_set<int> g, unordered_set<int> t, unordered_set<int> n){
@@ -85,6 +90,8 @@ Sample::Sample(unordered_set<int> a, unordered_set<int> c, unordered_set<int> g,
     G = g;
     T = t;
     N = n;
+    //As samples are not saved if they don't pass QC, this is implicitly true
+    qc_pass = true;
 }
 
 bool Sample::operator== (const Sample &s2) const{
@@ -183,6 +190,11 @@ unordered_set<int> load_n(string filename){
 }
 
 void save(string filename, Sample* sample){
+    if(!sample->qc_pass){
+        //This sample has not passed QC, so don't save it
+        cout << "||QC_FAIL: " << sample->uuid << "||" << endl;
+        return;
+    }
     //Append the sample UUID to the filename to save as such
     if(filename[filename.size()-1] != '/'){
         //No trailing / so add
