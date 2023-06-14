@@ -12,11 +12,76 @@ from typing import Annotated
 
 import oci
 
-from fastapi import FastAPI, Response, File, UploadFile
+from fastapi import FastAPI, Response, File, UploadFile, HTTPException
 from model import Batch, Distance, Lock, get_engine
 from sqlalchemy.orm import create_session
 
 app = FastAPI()
+
+#==============================
+# @@@@ External API calls @@@@
+#==============================
+
+@app.get("/api/relatedness/{species}/neighbours")
+async def neighbours(species: str, guid: str):
+    '''Get all of the neighbours of a given sample within the cutoff
+
+    Args:
+        species (str): Name of the species (for the db)
+        guid (str): GUID of the sample to find neighbours for
+    '''
+    conn, engine = get_engine(species)
+    session = create_session(engine)
+
+    #TODO: Add access filtering
+    q = session.query(Distance).\
+        filter((Distance.guid1 == guid) | (Distance.guid2 == guid)).\
+        all()
+
+    if len(q) == 0:
+        #We have nothing in the table so this hasn't been processed yet
+        #In this case, return 404
+        raise HTTPException(status_code=404, detail="GUID not found!")
+    
+    distances = {}
+    orphan = False
+    for record in q:
+        if record.guid1 == guid:
+            if record.guid1 == record.guid2:
+                #Orphan record (but continue in case this is outdated)
+                orphan = True
+            elif record.guid2 == "||QC_FAIL||":
+                #Sample had <50% ACGT so failed QC. Report as such
+                return {"distances": None, "QC": "FAIL"}
+            distances[record.guid2] = record.dist
+        elif record.guid2 == guid:
+            distances[record.guid1] = record.dist
+    
+    session.close()
+    if orphan and len(distances) == 1:
+        #We have an orphan with just the orphan record so return no distances
+        return {"distances": {}, "QC": "PASS"}
+    else:
+        return {"distances": distances, "QC": "PASS"}
+
+@app.get("/api/relatedness/{species}/recompute")
+async def recompute(species: str, guid: str, cutoff: int=float('inf')):
+    '''Recompute the distance of this sample from all existing samples.
+    This will take a **long** time so will likely require extended timeout
+
+    Args:
+        species (str): Name of the species (for the db)
+        guid (str): GUID of the sample to recompute distances for
+        cutoff (int, optional): SNP cutoff for computation. Defaults to having no cutoff.
+    '''
+    #TODO: Implement this. Requires FN5 changes (and probably addition of Python bindings)
+    #This is not required for MVP, but adding as a placeholder
+    return {"distances": "NOT IMPLEMENTED"}
+
+#==============================
+# @@@@ Internal API calls @@@@
+#==============================
+
 
 #==============================
 # @@@@ Database API calls @@@@
@@ -49,12 +114,12 @@ async def check_lock(species: str, guid: str):
         #Check there isn't already this sample in a batch
         q = session.query(Batch).filter(Batch.guid == guid).all()
         if len(q) != 0:
-            return
+            return {"lock": ""}
         b = Batch(guid=guid)
         session.add(b)
         session.commit()
         session.close()
-        return {"lock": None}
+        return {"lock": ""}
     else:
         #Queue has room so add new lock
         session = create_session(engine)
@@ -80,7 +145,7 @@ async def next_lock(species: str):
     if l is not None:
         return {"lock": l.thread_id}
     else:
-        return {"lock": None}
+        return {"lock": ""}
 
 @app.get("/api/relatedness/{species}/db/clear_lock")
 async def clear_lock(species: str, lock: int):
@@ -221,11 +286,13 @@ async def download(species: str, path: str):
     namespace =  object_storage.get_namespace().data
 
     #Get the object from the bucket
-    obj = object_storage.get_object(namespace, "JW-test", species + "/" + path)
-    #Get the object's contents
-    bin_obj = obj.data.content
-    return Response(content=bin_obj, media_type="application/gzip")
-
+    try:
+        obj = object_storage.get_object(namespace, "JW-test", species + "/" + path)
+        #Get the object's contents
+        bin_obj = obj.data.content
+        return Response(content=bin_obj, media_type="application/gzip")
+    except:
+        raise HTTPException(status_code=404, detail="Sample not found!")
 
 @app.post("/api/relatedness/{species}/delete")
 async def delete(species: str, file: UploadFile):
