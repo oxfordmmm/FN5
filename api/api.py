@@ -123,7 +123,11 @@ async def check_lock(species: str, guid: str):
     else:
         #Queue has room so add new lock
         session = create_session(engine)
-        lock = Lock()
+
+        #Give it 15mins per item in the queue to avoid conflicts
+        t = time.time() + 900 * queue_size
+        
+        lock = Lock(start=t)
         session.add(lock)
         session.commit()
         return {"lock": lock.thread_id}
@@ -140,7 +144,7 @@ async def next_lock(species: str):
 
     l = session.query(Lock).\
         filter(Lock.start + 3600 > time.time()).\
-        order_by(Lock.start.asc()).first()
+        order_by(Lock.thread_id.asc()).first()
     session.close()
     if l is not None:
         return {"lock": l.thread_id}

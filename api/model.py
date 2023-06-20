@@ -48,15 +48,7 @@ class Lock(Base):
     __tablename__ = "snp_lock"
 
     start: Mapped[float] = mapped_column(Integer())
-    thread_id: Mapped[int] = mapped_column(Integer(), primary_key=True)
-
-    def __init__(self):
-        '''Construtor. Handles generation fo the data for this Lock
-        '''
-        #Use a range of 0-2.147b to ensure no collisions
-        id_ = random.randint(0, 2**31)
-        s = time.time()
-        super().__init__(thread_id=id_, start=s)
+    thread_id: Mapped[int] = mapped_column(Integer(), primary_key=True, autoincrement=True)
 
     def __repr__(self) -> str:
         return f"Lock(thread_id={self.thread_id}, start={self.start})"
