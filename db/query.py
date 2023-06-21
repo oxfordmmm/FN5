@@ -1,6 +1,6 @@
 '''Very simple querying of the output matrix to find nearest neighbours
 '''
-from db.model import *
+from model import *
 import argparse
 
 if __name__ == "__main__":

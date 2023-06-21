@@ -18,6 +18,10 @@ int main(int nargs, const char* args_[]){
     //Check to see if values are supplied or we need to use default
     if(check_flag(args, "--threads")){
         thread_count = stoi(args.at("--threads"));
+        //Make sure we have >=1 thread to avoid issues
+        if(thread_count < 1){
+            thread_count = 1;
+        }
     }
     if(check_flag(args, "--saves_dir")){
         save_dir = args.at("--saves_dir");
@@ -55,6 +59,10 @@ int main(int nargs, const char* args_[]){
         return 0;
     }
 
+    if(check_flag(args, "--add_batch")){
+        add_batch(args.at("--add_batch"), cutoff);
+    }
+    
     string reference = load_reference(ref_genome_path);
     
     unordered_set<int> mask = load_mask(exclude_mask_path);
@@ -73,6 +81,10 @@ int main(int nargs, const char* args_[]){
 
     if(check_flag(args, "--compare_row")){
         compare_row(args.at("--compare_row"), reference, mask, cutoff);
+    }
+
+    if(check_flag(args, "--reference_compress")){
+        reference_compress(args.at("--reference_compress"), reference, mask);
     }
 
 }

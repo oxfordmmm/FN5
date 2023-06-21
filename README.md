@@ -1,12 +1,51 @@
 # Find Neighbour 5
 Spiritual successor to [Find Neighbour 4](https://github.com/davidhwyllie/findNeighbour4) - continuing the work of David Wyllie.
 
+[![Tests](https://github.com/oxfordmmm/FN5/actions/workflows/test.yaml/badge.svg)](https://github.com/oxfordmmm/FN5/actions/workflows/test.yaml)
+[![Build FN5 images](https://github.com/oxfordmmm/FN5/actions/workflows/build.yaml/badge.svg?branch=testing-docker)](https://github.com/oxfordmmm/FN5/actions/workflows/build.yaml)
+
 SNP matrix generation with caching to disk to allow fast reloading.
 A test set of 1286 cryptic samples was used. Once parsed and saved, these can be read into memory (on a single thread) in 0.5s - scaling linearly
 
 Defaults to using 20 threads where multithreading is used. This can be updated through use of the `--threads` flag
 
 Saves default to `./saves`. This can be updated through use of the `--saves_dir` flag
+
+# Running
+
+## Locally
+Compile and run locally. Requires `git`, `bash`, `make`, `cmake`, and `g++` or `clang`. These should be preinstalled on most systems.
+```
+git clone git@github.com:oxfordmmm/FN5.git
+cd FN5
+./build.sh
+
+./fn5 <do stuff>
+```
+
+## Docker
+Docker image is available privately via OCI container registry. Requires authentication.
+```
+#Open a shell in the container
+docker run -it lhr.ocir.io/lrbvkel2wjot/oxfordmmm/fn5:latest bash
+```
+
+## Nextflow
+Requires OCI authorisation too.
+
+https://github.com/oxfordmmm/fn5_pipeline
+
+
+# Run tests
+A unit test suite is provided, as well as a set of end-to-end tests
+```
+#Compile and run the unit tests
+./unit-test.sh
+
+#Run end-to-end tests and ensure expected output
+./test/test.sh
+python -m pytest -vv
+```
 
 # Load testing
 Using the cryptic set of 15229 samples, on a VM with 64 cores (using max 250 threads):
@@ -28,22 +67,6 @@ By using a SNP cutoff, the amount of data produced becomes significantly more tr
 With binary saves:
 * Time to parse and save to disk: 54s
 * Time to construct SNP matrix with cutoff of 20: 3min 30s
-
-## Compile
-```
-./build.sh
-```
-
-## Run tests
-A unit test suite is provided, as well as a set of end-to-end tests
-```
-#Compile and run the unit tests
-./unit-test.sh
-
-#Run end-to-end tests and ensure expected output
-./test/test.sh
-python -m pytest -vv
-```
 
 ## Parse some FASTA files
 Parse some FASTA files into saves. Pass a path to a line separated file of FASTA paths. Currently only supporting upper case nucleotides. This is multithreaded, so can be performed efficiently.
@@ -77,9 +100,6 @@ In most cases, a cutoff of 20 makes sense, but to change this, use the `--cutoff
 ## Outputs
 By default, most functions lead to outputs to `stdout`. This allows file redirection/piping to other programs. Querying this output should then be trivial
 
-
-## Nextflow-like
-Testing some Nextflow-like behaviour, including fetching from and pushing to buckets. This produces a threadsafe, self-queuing system which will allow only one batch to be added at a time. The results are parsed into a database and can then be queried.
 ### Setup
 As this uses Python for the results parsing and database, install all requirements (optionally in a virtualenv) with `pip install -r requirements.txt`.
 
@@ -103,6 +123,10 @@ Run `python run.py`
 
 ### Query database
 Run `python query.py --guid <guid here>`
+
+### Quality control
+FN5 checks that samples are at least 50% ACGT before allowing them to be saved.
+Any samples which produce `||QC_FAIL: <guid>||` have failed this check and will not be saved!
 
 ## TODO:
 * Lower case FASTA support

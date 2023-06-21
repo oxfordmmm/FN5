@@ -121,6 +121,10 @@ vector<Sample*> bulk_load(string path, string reference, unordered_set<int> mask
     vector<string> filepaths;
     char ch;
     fstream pathsFile(path, fstream::in);
+    if(!pathsFile.good()){
+        cout << "Invalid path to line separated paths: " << path << endl;
+        exit(1);
+    }
     string f;
     while(pathsFile >> noskipws >> ch){
         if(ch == '\n'){
@@ -310,6 +314,10 @@ void add_many(string path, string reference, unordered_set<int> mask, int cutoff
     char ch;
     string acc;
     fstream fin(path, fstream::in);
+        if(!fin.good()){
+        cout << "Invalid path to line separated paths: " << path << endl;
+        exit(1);
+    }
     while (fin >> noskipws >> ch) {
         if(ch == '\n'){
             if(acc.find_first_not_of(' ') != string::npos){
@@ -497,3 +505,80 @@ void compute_loaded(int cutoff, vector<Sample*> samples){
     }
 
 }
+
+void reference_compress(string path, string reference, unordered_set<int> mask){
+    Sample *s = new Sample(path, reference, mask);       
+    save(save_dir+"/", s);
+    cout << s->uuid << endl;
+}
+
+void add_batch(string path, int cutoff){
+    //**VERY** similar to `add_many`, but starting with reference compressed sequences
+    vector<Sample*> existing = load_saves_multithreaded();
+    
+    //Use the same method to load the new saves
+    //So change the save dir as appropriate
+    // string __save_dir = save_dir;
+    save_dir = path;
+    vector<Sample*> to_add = load_saves_multithreaded();
+
+    vector<tuple<Sample*, Sample*>> comparisons;
+    //Compare each new one with an each existing comparison
+    for(int i=0;i<existing.size();i++){
+        for(int j=0;j<to_add.size();j++){
+            if(existing.at(i)->uuid == to_add.at(j)->uuid){
+                continue;
+            }
+            comparisons.push_back(make_tuple(existing.at(i), to_add.at(j)));
+        }
+    }
+    //And compare each new one against other new ones
+    unordered_set<string> seen;
+    for(int i=0;i<to_add.size();i++){
+        Sample *s1 = to_add.at(i);
+        seen.insert(s1->uuid);
+        for(int j=0;j<to_add.size();j++){
+            Sample *s2 = to_add.at(j);
+            if(seen.contains(s2->uuid)){
+                continue;
+            }
+            else{
+                comparisons.push_back(make_tuple(s1, s2));
+            }
+        }
+    }
+
+    //Do comparisons with multithreading
+    int chunk_size = comparisons.size() / thread_count;
+    vector<thread> threads;
+    for(int i=0;i<thread_count;i++){
+        vector<tuple<Sample*, Sample*>> these(comparisons.begin() + i*chunk_size, comparisons.begin() + i*chunk_size + chunk_size);
+        threads.push_back(thread(do_comparisons, these, cutoff));
+    }
+
+    //Catch ones missed at the end due to rounding (doing on main thread)
+    vector<tuple<string, string, int>> distances;
+    for(int i=chunk_size*thread_count;i<comparisons.size();i++){
+        tuple<Sample*, Sample*> val = comparisons.at(i);
+        if(get<0>(val)->uuid == get<1>(val)->uuid){
+        }
+        int dist = get<0>(val)->dist(get<1>(val), cutoff);
+        if(dist <= cutoff){
+            distances.push_back({get<0>(val)->uuid,  get<1>(val)->uuid, dist});
+        }
+        if(distances.size() == 1000){
+            print_comparisons(distances);
+            distances = {};
+        }
+    }
+    print_comparisons(distances);
+
+    //Join the threads
+    for(int i=0;i<threads.size();i++){
+        threads.at(i).join();
+    }
+
+
+
+}
+

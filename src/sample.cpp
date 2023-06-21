@@ -10,6 +10,10 @@ using namespace std;
 Sample::Sample(string filename, string reference, unordered_set<int> mask){
     char ch;
     fstream fin(filename, fstream::in);
+    if(!fin.good()){
+        cout << "No such FASTA file " << filename << endl;
+        exit(1);
+    }
     //Deal with the header first
     //Assume last pipe separated value in header is UUID (at least for now)
     while(fin >> noskipws >> ch){
@@ -73,6 +77,11 @@ Sample::Sample(string filename, string reference, unordered_set<int> mask){
         i++;
     }
     fin.close();
+
+    //For a basic QC check we want to ensure that <50% of the sample is N
+    //Inherently ref has no Ns, so total Ns == this->N.size()
+    float total_size = reference.size();
+    qc_pass = N.size() / total_size < 0.5;
 }
 
 Sample::Sample(unordered_set<int> a, unordered_set<int> c, unordered_set<int> g, unordered_set<int> t, unordered_set<int> n){
@@ -81,6 +90,8 @@ Sample::Sample(unordered_set<int> a, unordered_set<int> c, unordered_set<int> g,
     G = g;
     T = t;
     N = n;
+    //As samples are not saved if they don't pass QC, this is implicitly true
+    qc_pass = true;
 }
 
 bool Sample::operator== (const Sample &s2) const{
@@ -135,6 +146,10 @@ unordered_set<int> Sample::dist_x(unordered_set<int> this_x, unordered_set<int> 
 
 void save_n(unordered_set<int> to_save, string filename){
     fstream out(filename, fstream::binary | fstream::out);
+    if(!out.good()){
+        cout << "Error writing save file: " << filename << endl;
+        exit(1);
+    }
 
     for(const int elem: to_save){
         const int *p = &elem;
@@ -148,6 +163,10 @@ void save_n(unordered_set<int> to_save, string filename){
 unordered_set<int> load_n(string filename){
     //ate flag seeks to the end of the file
     fstream in(filename, fstream::binary | fstream::in | fstream::ate);
+    if(!in.good()){
+        cout << "Invalid save path: " << filename << endl;
+        exit(1);
+    }
     //Get the size of the file in bytes (we have to convert this as 1 int == 4 bytes)
     int size = in.tellg();
     in.seekg(0); //Go back to the start so we can read
@@ -171,6 +190,11 @@ unordered_set<int> load_n(string filename){
 }
 
 void save(string filename, Sample* sample){
+    if(!sample->qc_pass){
+        //This sample has not passed QC, so don't save it
+        cout << "||QC_FAIL: " << sample->uuid << "||" << endl;
+        return;
+    }
     //Append the sample UUID to the filename to save as such
     if(filename[filename.size()-1] != '/'){
         //No trailing / so add
@@ -236,6 +260,10 @@ string load_reference(string filename){
     string reference = "";
     char ch;
     fstream fin(filename, fstream::in);
+    if(!fin.good()){
+        cout << "Invalid reference genome: " << filename << endl;
+        exit(1);
+    }
 
     //First line is the header, but for this we don't care about it
     while(fin >> noskipws >> ch){
@@ -265,6 +293,10 @@ unordered_set<int> load_mask(string filename){
         return mask;
     }
     fstream fin2(filename, fstream::in);
+    if(!fin2.good()){
+        cout << "Invalid mask path: " << filename << endl;
+        exit(1);
+    }
     string acc;
     char ch;
     while (fin2 >> noskipws >> ch) {

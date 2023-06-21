@@ -1,6 +1,9 @@
 cmake_minimum_required(VERSION 3.10)
+set(CMAKE_CXX_FLAGS "-std=c++20 -pthread -O0 ${CMAKE_CXX_FLAGS}")
 set (CMAKE_CXX_STANDARD 20)
-set(CMAKE_CXX_FLAGS "-std=c++20 -pthread -O0 -g -fprofile-arcs -ftest-coverage ${CMAKE_CXX_FLAGS}")
+
+
+project(fn5_tests)
 
 #Debug build run_tests
 file(GLOB tests 
@@ -27,7 +30,4 @@ gtest_main
 )
 
 include(GoogleTest)
-
-# include(CodeCoverage)
-# setup_target_for_coverage_lcov(${PROJECT_NAME}_coverage run_tests coverage)
 
