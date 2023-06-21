@@ -1,5 +1,8 @@
 cmake_minimum_required(VERSION 3.10)
 set(CMAKE_CXX_FLAGS "-std=c++20 -pthread -O0 ${CMAKE_CXX_FLAGS}")
+set (CMAKE_CXX_STANDARD 20)
+
+
 project(fn5_tests)
 
 #Debug build run_tests
