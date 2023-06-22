@@ -45,7 +45,7 @@ class Distance(Base):
 class Lock(Base):
     '''For locking the DB during execution
     '''
-    __tablename__ = "snp_lock"
+    __tablename__ = "lock"
 
     start: Mapped[float] = mapped_column(Integer())
     thread_id: Mapped[int] = mapped_column(Integer(), primary_key=True, autoincrement=True)
