@@ -65,7 +65,7 @@ async def neighbours(species: str, guid: str):
         return {"distances": distances, "QC": "PASS"}
 
 @app.get("/api/relatedness/{species}/recompute")
-async def recompute(species: str, guid: str, cutoff: int=float('inf')):
+async def recompute(species: str, guid: str, cutoff: int=9999999):
     '''Recompute the distance of this sample from all existing samples.
     This will take a **long** time so will likely require extended timeout
 
