@@ -1,0 +1,27 @@
+version: "3"
+
+services:
+  db:
+    image: mysql:8
+    container_name: fn5-mysql
+    # restart: always
+    command: --default-authentication-plugin=mysql_native_password
+    volumes:
+      - dev-volume:/var/lib/mysql
+    env_file:
+      - compose.env
+    ports:
+      - "3306:3306"
+    logging:
+      driver: "json-file"
+      options:
+        max-file: "5"
+        max-size: "10k"
+
+volumes:
+  dev-volume:
+    driver: local
+
+networks:
+  dev-network:
+    driver: bridge

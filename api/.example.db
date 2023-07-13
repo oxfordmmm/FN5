@@ -1,0 +1,1 @@
+DB_PATH="mysql://docker:docker@localhost:3306/relatedness"
