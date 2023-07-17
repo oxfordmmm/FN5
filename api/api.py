@@ -42,7 +42,7 @@ async def neighbours(species: str, guid: str):
         #We have nothing in the table so this hasn't been processed yet
         #In this case, return 404
         raise HTTPException(status_code=404, detail="GUID not found!")
-    
+
     distances = {}
     orphan = False
     for record in q:
@@ -56,7 +56,7 @@ async def neighbours(species: str, guid: str):
             distances[record.guid2] = record.dist
         elif record.guid2 == guid:
             distances[record.guid1] = record.dist
-    
+
     session.close()
     if orphan and len(distances) == 1:
         #We have an orphan with just the orphan record so return no distances
@@ -89,12 +89,12 @@ async def recompute(species: str, guid: str, cutoff: int=9999999):
 
 @app.get("/api/relatedness/{species}/db/{guid}/check_lock")
 async def check_lock(species: str, guid: str):
-    '''Check the size of the lock table. 
+    '''Check the size of the lock table.
         if bigger than an arbitrary cutoff (3)
             add to batch and return null
         else
             add new lock and return the thread_id
-    
+
     Args:
         species (str): Name of the species (for the db)
         guid (str): This sample's guid. Used for adding to batch if appropriate
@@ -105,7 +105,7 @@ async def check_lock(species: str, guid: str):
     q = session.query(Lock).\
         filter(Lock.start + 3600 > time.time()).all()
     session.close()
-    
+
     queue_size = len(q)
 
     if queue_size >= 3:
@@ -126,12 +126,12 @@ async def check_lock(species: str, guid: str):
 
         #Give it 15mins per item in the queue to avoid conflicts
         t = time.time() + 900 * queue_size
-        
+
         lock = Lock(start=t)
         session.add(lock)
         session.commit()
         return {"lock": lock.thread_id}
-    
+
 @app.get("/api/relatedness/{species}/db/next_lock")
 async def next_lock(species: str):
     '''Get the next lock from the DB. Allows waiting for a lock to be next
@@ -252,7 +252,7 @@ async def upload(species: str, file: UploadFile, path: str):
         path (str): Desired path (including object name) within the species folder on the bucket
     '''
     #Get the object storage and namespace from OCI
-    config = oci.config.from_file("~/.oci/config")
+    config = oci.config.from_file("~/.oci/config", "oracleidentitycloudservice/mmm_hieuthai")
     object_storage = oci.object_storage.ObjectStorageClient(config)
     namespace =  object_storage.get_namespace().data
 
@@ -264,7 +264,7 @@ async def upload(species: str, file: UploadFile, path: str):
 
 
 #Based on https://stackoverflow.com/questions/55873174/how-do-i-return-an-image-in-fastapi
-#Currently the only bucket operations should be with `*.tar.gz` files 
+#Currently the only bucket operations should be with `*.tar.gz` files
 @app.get("/api/relatedness/{species}/download",
         responses = {
             200: {
@@ -285,7 +285,7 @@ async def download(species: str, path: str):
     '''
     #The response for this doesn't work from the FastAPI docs page, but does via curl
     #Get the object storage and namespace from OCI
-    config = oci.config.from_file("~/.oci/config")
+    config = oci.config.from_file("~/.oci/config", "oracleidentitycloudservice/mmm_hieuthai")
     object_storage = oci.object_storage.ObjectStorageClient(config)
     namespace =  object_storage.get_namespace().data
 
@@ -308,10 +308,10 @@ async def delete(species: str, file: UploadFile):
         file (UploadFile): Line separated file of bucket paths to delete
     '''
     #Get the object storage and namespace from OCI
-    config = oci.config.from_file("~/.oci/config")
+    config = oci.config.from_file("~/.oci/config", "oracleidentitycloudservice/mmm_hieuthai")
     object_storage = oci.object_storage.ObjectStorageClient(config)
     namespace =  object_storage.get_namespace().data
-    
+
     paths = await file.read()
     paths = paths.decode("utf-8").strip()
     for line in paths.split("\n"):
