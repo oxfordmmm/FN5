@@ -1,4 +1,4 @@
-version: "3"
+version: "3.5"
 
 services:
   db:
@@ -12,6 +12,8 @@ services:
       - compose.env
     ports:
       - "3306:3306"
+    networks:
+      - dev-network
     logging:
       driver: "json-file"
       options:
@@ -25,3 +27,4 @@ volumes:
 networks:
   dev-network:
     driver: bridge
+    name: fn5-dev-network
