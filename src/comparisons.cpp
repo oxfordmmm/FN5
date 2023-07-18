@@ -506,8 +506,8 @@ void compute_loaded(int cutoff, vector<Sample*> samples){
 
 }
 
-void reference_compress(string path, string reference, unordered_set<int> mask){
-    Sample *s = new Sample(path, reference, mask);       
+void reference_compress(string path, string reference, unordered_set<int> mask, string guid){
+    Sample *s = new Sample(path, reference, mask, guid);
     save(save_dir+"/", s);
     cout << s->uuid << endl;
 }

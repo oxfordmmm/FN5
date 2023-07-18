@@ -7,7 +7,7 @@
 using namespace std;
 
 
-Sample::Sample(string filename, string reference, unordered_set<int> mask){
+Sample::Sample(string filename, string reference, unordered_set<int> mask, string guid){
     char ch;
     fstream fin(filename, fstream::in);
     if(!fin.good()){
@@ -16,6 +16,7 @@ Sample::Sample(string filename, string reference, unordered_set<int> mask){
     }
     //Deal with the header first
     //Assume last pipe separated value in header is UUID (at least for now)
+    string uuid_;
     while(fin >> noskipws >> ch){
         if(ch == '\n'){
             //Line has ended
@@ -23,12 +24,22 @@ Sample::Sample(string filename, string reference, unordered_set<int> mask){
         }
         if(ch == '|'){
             //New pipe, so reset
-            uuid = "";
+            uuid_ = "";
         }
         else{
             //Add to the str
-            uuid += ch;
+            uuid_ += ch;
         }
+    }
+
+    //Check if we've been given a GUID instead
+    if(guid == ""){
+        //Nothing given, so use value from header
+        uuid = uuid_;
+    }
+    else{
+        //Given a GUID, so use it
+        uuid = guid;
     }
 
     int i = 0;
