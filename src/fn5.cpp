@@ -84,7 +84,13 @@ int main(int nargs, const char* args_[]){
     }
 
     if(check_flag(args, "--reference_compress")){
-        reference_compress(args.at("--reference_compress"), reference, mask);
+        string guid = "";
+        if(check_flag(args, "--guid")){
+            //If guid is given as an arg, use it
+            //If not, just use whatever can be found from the header
+            guid = args.at("--guid");
+        }
+        reference_compress(args.at("--reference_compress"), reference, mask, guid);
     }
 
 }

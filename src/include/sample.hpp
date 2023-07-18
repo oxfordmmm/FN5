@@ -66,7 +66,7 @@ class Sample{
          * @param reference String of reference nucleotides
          * @param mask Genome indices to ignore (based on epidemialogical evidence)
          */
-        Sample(string filename, string reference, unordered_set<int> mask);
+        Sample(string filename, string reference, unordered_set<int> mask, string guid="");
 
         /**
          * @brief Sample constructor. Used for instanciated a previously saved Sample

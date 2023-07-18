@@ -166,8 +166,9 @@ void compute_loaded(int cutoff, vector<Sample*> samples);
 * @param path Path to a FASTA file
 * @param reference Reference nucleotides
 * @param mask Exclusion mask
+* @param guid GUID for the sample
 */
-void reference_compress(string path, string reference, unordered_set<int> mask);
+void reference_compress(string path, string reference, unordered_set<int> mask, string guid);
 
 /**
 * @brief Add a batch specified by sample saves in a given dir
