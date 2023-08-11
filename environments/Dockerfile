@@ -13,7 +13,7 @@ RUN apt install -y cmake
 RUN apt install -y python3 python3-pip mysql-client libmysqlclient-dev
 
 #Script requirements
-RUN apt install -y curl jq pigz
+RUN apt install -y curl jq pigz s3fs
 
 #Compile and install FN5
 RUN git clone https://github.com/oxfordmmm/FN5.git && \
