@@ -89,10 +89,11 @@ Sample::Sample(string filename, string reference, unordered_set<int> mask, strin
     }
     fin.close();
 
-    //For a basic QC check we want to ensure that <50% of the sample is N
+    //For a basic QC check we want to ensure that <20% of the sample is N
+    //This should infer that the sample is >=80% ACGT
     //Inherently ref has no Ns, so total Ns == this->N.size()
     float total_size = reference.size();
-    qc_pass = N.size() / total_size < 0.5;
+    qc_pass = N.size() / total_size < 0.2;
 }
 
 Sample::Sample(unordered_set<int> a, unordered_set<int> c, unordered_set<int> g, unordered_set<int> t, unordered_set<int> n){
