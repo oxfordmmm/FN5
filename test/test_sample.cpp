@@ -1,5 +1,6 @@
 #include <gtest/gtest.h>
 #include <unordered_set>
+#include <vector>
 #include "../src/include/sample.hpp"
 
 
@@ -53,11 +54,12 @@ TEST(sample, init){
     ASSERT_EQ(expected_mask, mask);
 
     //Empty set for checking things which shouldn't have changed
-    unordered_set<int> empty;
+    unordered_set<int> empty_mask;
+    vector<int> empty;
 
     //For simplicity here, check without a mask
-    Sample* s1 = new Sample("cases/dummy/1.fasta", reference, empty);
-    unordered_set<int> C_1 = {0};
+    Sample* s1 = new Sample("cases/dummy/1.fasta", reference, empty_mask);
+    vector<int> C_1 = {0};
     ASSERT_EQ(s1->uuid, "uuid1");
     ASSERT_EQ(empty, s1->A);
     ASSERT_EQ(C_1, s1->C);
@@ -65,8 +67,8 @@ TEST(sample, init){
     ASSERT_EQ(empty, s1->T);
     ASSERT_EQ(empty, s1->N);
 
-    Sample* s2 = new Sample("cases/dummy/2.fasta", reference, empty);
-    unordered_set<int> T_2 = {1};
+    Sample* s2 = new Sample("cases/dummy/2.fasta", reference, empty_mask);
+    vector<int> T_2 = {1};
     ASSERT_EQ(s2->uuid, "uuid2");
     ASSERT_EQ(empty, s2->A);
     ASSERT_EQ(empty, s2->C);
@@ -83,9 +85,9 @@ TEST(sample, init){
     ASSERT_EQ(empty, s2->T);
     ASSERT_EQ(empty, s2->N);
 
-    Sample* s3 = new Sample("cases/dummy/3.fasta", reference, empty);
-    unordered_set<int> G_3 = {14};
-    unordered_set<int> N_3 = {0};
+    Sample* s3 = new Sample("cases/dummy/3.fasta", reference, empty_mask);
+    vector<int> G_3 = {14};
+    vector<int> N_3 = {0};
     ASSERT_EQ(s3->uuid, "uuid3");
     ASSERT_EQ(empty, s3->A);
     ASSERT_EQ(empty, s3->C);
@@ -93,10 +95,10 @@ TEST(sample, init){
     ASSERT_EQ(empty, s3->T);
     ASSERT_EQ(N_3, s3->N);
 
-    Sample* s4 = new Sample("cases/dummy/4.fasta", reference, empty);
-    unordered_set<int> G_4 = {1};
-    unordered_set<int> N_4 = {0};
-    unordered_set<int> T_4 = {71};
+    Sample* s4 = new Sample("cases/dummy/4.fasta", reference, empty_mask);
+    vector<int> G_4 = {1};
+    vector<int> N_4 = {0};
+    vector<int> T_4 = {71};
     ASSERT_EQ(s4->uuid, "uuid4");
     ASSERT_EQ(empty, s4->A);
     ASSERT_EQ(empty, s4->C);

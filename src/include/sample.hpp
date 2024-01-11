@@ -25,27 +25,27 @@ class Sample{
         /**
         * @brief Set of indices which this sample is `A` and the reference is not
         */
-        unordered_set<int> A;
+        vector<int> A;
 
         /**
         * @brief Set of indices which this sample is `C` and the reference is not
         */
-        unordered_set<int> C;
+        vector<int> C;
 
         /**
         * @brief Set of indices which this sample is `G` and the reference is not
         */
-        unordered_set<int> G;
+        vector<int> G;
 
         /**
         * @brief Set of indices which this sample is `T` and the reference is not
         */
-        unordered_set<int> T;
+        vector<int> T;
 
         /**
         * @brief Set of indices which this sample is `N`
         */
-        unordered_set<int> N;
+        vector<int> N;
 
         /**
         * @brief This sample's UUID. Assumed to be `FASTA_header.split("|")[-1]`
@@ -77,7 +77,7 @@ class Sample{
          * @param t Set of genome indices which this sample has an T, differing from the reference
          * @param n Set of genome indices which this sample has an N, differing from the reference
          */
-        Sample(unordered_set<int> a, unordered_set<int> c, unordered_set<int> g, unordered_set<int> t, unordered_set<int> n);
+        Sample(vector<int> a, vector<int> c, vector<int> g, vector<int> t, vector<int> n);
 
         /**
         * @brief Provide a custom implementation of `==` to allow equality checking
@@ -108,7 +108,7 @@ class Sample{
          * @param cutoff Distance to stop caring after (for speed)
          * @return int The distance between the two samples. If dist == cutoff + 1, the sample is further away and shouldn't be counted
          */
-        unordered_set<int> dist_x(unordered_set<int> this_x, unordered_set<int> this_n, unordered_set<int> sample_x, unordered_set<int> sample_n, unordered_set<int> acc, int cutoff);
+        unordered_set<int> dist_x(vector<int> this_x, vector<int> this_n, vector<int> sample_x, vector<int> sample_n, unordered_set<int> acc, int cutoff);
 };
 
 /**
@@ -117,7 +117,7 @@ class Sample{
 * @param to_save Set to save
 * @param filename Output filename
 */
-void save_n(unordered_set<int> to_save, string filename);
+void save_n(vector<int> to_save, string filename);
 
 /**
 * @brief Load an unordered set from a binary save on disk
@@ -125,7 +125,7 @@ void save_n(unordered_set<int> to_save, string filename);
 * @param filename File to load
 * @returns Unordered set of the ints stored in the file
 */
-unordered_set<int> load_n(string filename);
+vector<int> load_n(string filename);
 
 /**
 * @brief Save a sample to disk

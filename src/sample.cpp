@@ -57,31 +57,31 @@ Sample::Sample(string filename, string reference, unordered_set<int> mask, strin
             //We have a difference from reference, so add to appropriate set
             switch (ch) {
                 case 'A':
-                    A.insert(i);
+                    A.push_back(i);
                     break;
                 case 'C':
-                    C.insert(i);
+                    C.push_back(i);
                     break;
                 case 'G':
-                    G.insert(i);
+                    G.push_back(i);
                     break;
                 case 'T':
-                    T.insert(i);
+                    T.push_back(i);
                     break;
                 case 'N':
-                    N.insert(i);
+                    N.push_back(i);
                     break;
                 case '-':
-                    N.insert(i);
+                    N.push_back(i);
                     break;
                 case 'X':
-                    N.insert(i);
+                    N.push_back(i);
                     break;
                 case 'O':
-                    N.insert(i);
+                    N.push_back(i);
                     break;
                 case 'Z':
-                    N.insert(i);
+                    N.push_back(i);
                     break;
             }
         }
@@ -96,7 +96,7 @@ Sample::Sample(string filename, string reference, unordered_set<int> mask, strin
     qc_pass = N.size() / total_size < 0.2;
 }
 
-Sample::Sample(unordered_set<int> a, unordered_set<int> c, unordered_set<int> g, unordered_set<int> t, unordered_set<int> n){
+Sample::Sample(vector<int> a, vector<int> c, vector<int> g, vector<int> t, vector<int> n){
     A = a;
     C = c;
     G = g;
@@ -125,16 +125,16 @@ int Sample::dist(Sample* sample, int cutoff){
     return acc.size();
 }
 
-unordered_set<int> Sample::dist_x(unordered_set<int> this_x, unordered_set<int> this_n, unordered_set<int> sample_x, unordered_set<int> sample_n, unordered_set<int> acc, int cutoff){
+unordered_set<int> Sample::dist_x(vector<int> this_x, vector<int> this_n, vector<int> sample_x, vector<int> sample_n, unordered_set<int> acc, int cutoff){
     //Increment cutoff so we can reject distances > cutoff entirely
     cutoff++;
     for(const int& elem: this_x){
         if(acc.size() == cutoff){
             return acc;
         }
-        if(!sample_x.contains(elem)){ 
+        if(!binary_search(sample_x.begin(), sample_x.end(), elem)){
             //Not a in sample
-            if(!sample_n.contains(elem)){
+            if(!binary_search(sample_n.begin(), sample_n.end(), elem)){
                 //Not an N comparison either, so add
                 acc.insert(elem);
             }
@@ -144,9 +144,9 @@ unordered_set<int> Sample::dist_x(unordered_set<int> this_x, unordered_set<int> 
         if(acc.size() == cutoff){
             return acc;
         }
-        if(!this_x.contains(elem)){
+        if(!binary_search(this_x.begin(), this_x.end(), elem)){
             //Not a in sample
-            if(!this_n.contains(elem)){
+            if(!binary_search(this_n.begin(), this_n.end(), elem)){
                 //Not an N comparison either, so add
                 acc.insert(elem);
             }
@@ -156,7 +156,7 @@ unordered_set<int> Sample::dist_x(unordered_set<int> this_x, unordered_set<int> 
     return acc;
 }
 
-void save_n(unordered_set<int> to_save, string filename){
+void save_n(vector<int> to_save, string filename){
     fstream out(filename, fstream::binary | fstream::out);
     if(!out.good()){
         cout << "Error writing save file: " << filename << endl;
@@ -172,7 +172,7 @@ void save_n(unordered_set<int> to_save, string filename){
     out.close();
 }
 
-unordered_set<int> load_n(string filename){
+vector<int> load_n(string filename){
     //ate flag seeks to the end of the file
     fstream in(filename, fstream::binary | fstream::in | fstream::ate);
     if(!in.good()){
@@ -183,7 +183,7 @@ unordered_set<int> load_n(string filename){
     int size = in.tellg();
     in.seekg(0); //Go back to the start so we can read
 
-    unordered_set<int> output;
+    vector<int> output;
 
     for(int j=0;j<size/4;j++){
         //Read 4 characters from the file into a char array
@@ -193,10 +193,13 @@ unordered_set<int> load_n(string filename){
         //Convert the char array into an int and insert
         int *p;
         p = (int *) i;
-        output.insert(*p);
+        output.push_back(*p);
     }
 
     in.close();
+
+    //Make sure this is sorted or binary search breaks
+    sort(output.begin(), output.end());
 
     return output;
 }
@@ -217,7 +220,7 @@ void save(string filename, Sample* sample){
     for(int i=0; i<types.size(); i++){
         string f = filename + '.' + types.at(i);
         //Find out which one we need to save
-        unordered_set<int> toSave;
+        vector<int> toSave;
         switch (types.at(i)) {
             case 'A':
                 toSave = sample->A;
@@ -241,7 +244,7 @@ void save(string filename, Sample* sample){
 
 Sample* readSample(string filename){
     vector<char> types = {'A', 'C', 'G', 'T', 'N'};
-    vector<unordered_set<int>> loading;
+    vector<vector<int>> loading;
     for(int i=0; i<types.size(); i++){
         string f = filename + '.' + types.at(i);
         loading.push_back(load_n(f));
