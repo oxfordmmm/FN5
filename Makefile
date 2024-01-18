@@ -1,4 +1,4 @@
-start-api:
+start-api: start-db
 	cd api && uvicorn api:app --reload
 
 start-db:
