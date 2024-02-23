@@ -582,3 +582,94 @@ void add_batch(string path, int cutoff){
 
 }
 
+vector<tuple<string, string, int>> small_matrix(vector<Sample*> samples){
+    // Compute small matrix without cutoff, storing distances in ram for returning via python api
+    // Note that this does not have an explict size cutoff, but it's up to the user to determine acceptable time/resource usage
+
+    vector<tuple<string, string, int>> distances;
+    // vector<vector<int>> distances;
+    // for(int i=0;i<samples.size();i++){
+    //     vector<int> dists;
+    //     for(int j=0;j<samples.size();j++){
+    //         dists.push_back(samples.at(i)->dist(samples.at(j), 999999));
+    //     }
+    //     distances.push_back(dists);
+    // }
+    unordered_set<string> seen;
+    for(int i=0;i<samples.size();i++){
+        Sample *s1 = samples.at(i);
+        seen.insert(s1->uuid);
+        for(int j=0;j<samples.size();j++){
+            Sample *s2 = samples.at(j);
+            if(seen.contains(s2->uuid)){
+                //We've already done this comparison
+                continue;
+            }
+            else{
+                distances.push_back(make_tuple(s1->uuid, s2->uuid, s1->dist(s2, 999999)));
+            }
+        }
+    }
+    return distances;
+}
+
+vector<tuple<string, string, int>> ret_distances(vector<tuple<Sample*, Sample*>> comparisons){
+    //To be used by Thread to do comparisons in parallel with no cutoff
+    vector<tuple<string, string, int>> distances;
+    for(int i=0;i<comparisons.size();i++){
+        Sample *s1 = get<0>(comparisons.at(i));
+        Sample *s2 = get<1>(comparisons.at(i));
+        if(s1->uuid == s2->uuid){
+            continue;
+        }
+        int dist = s1->dist(s2, 999999);
+        
+        distances.push_back(make_tuple(s1->uuid, s2->uuid, dist));
+    }
+    // Future return
+    return distances;
+}
+
+vector<tuple<string, string, int>> multi_matrix(vector<Sample *> samples, int thread_count){
+    unordered_set<string> seen;
+    vector<tuple<Sample*, Sample*>> comparisons;
+    for(int i=0;i<samples.size();i++){
+        Sample *s1 = samples.at(i);
+        seen.insert(s1->uuid);
+        for(int j=0;j<samples.size();j++){
+            Sample *s2 = samples.at(j);
+            if(seen.contains(s2->uuid)){
+                //We've already done this comparison
+                continue;
+            }
+            else{
+                comparisons.push_back(make_tuple(s1, s2));
+            }
+        }
+    }
+
+    //Do comparisons with multithreading
+    int chunk_size = comparisons.size() / thread_count;
+    vector<future<vector<tuple<string, string, int>>>> promises;
+    vector<tuple<string, string, int>> distances;
+
+    for(int i=0;i<thread_count;i++){
+        vector<tuple<Sample*, Sample*>> these(comparisons.begin() + i*chunk_size, comparisons.begin() + i*chunk_size + chunk_size);
+        promises.push_back(async(&ret_distances, these));
+    }
+    //Catch ones missed at the end due to rounding (doing on main thread)
+    for(int i=chunk_size*thread_count;i<comparisons.size();i++){
+        tuple<Sample*, Sample*> val = comparisons.at(i);
+        int dist = get<0>(val)->dist(get<1>(val), 999999);
+        distances.push_back(make_tuple(get<0>(val)->uuid, get<1>(val)->uuid, dist));
+    }
+
+    //Join the threads
+    for(int i=0;i<promises.size();i++){
+        vector<tuple<string, string, int>> dists = promises.at(i).get();
+        for(int j=0;j<dists.size();j++){
+            distances.push_back(dists.at(j));
+        }
+    }
+    return distances;
+}

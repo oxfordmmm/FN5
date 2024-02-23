@@ -6,7 +6,12 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++20 -O3 -pthread")
 project (fn5)
 
 #Compile all of the classes defined
-file(GLOB src "*.cpp")
+file(GLOB src 
+    "fn5.cpp"
+    "argparse.cpp" 
+    "sample.cpp"
+    "comparisons.cpp"
+)
 
 add_executable(fn5 ${src})
 

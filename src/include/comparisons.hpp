@@ -3,6 +3,7 @@
 
 #include <mutex>
 #include <tuple>
+#include <future>
 
 /**
 * @brief Code for performing comparisons, writing outputs etc
@@ -177,3 +178,19 @@ void reference_compress(string path, string reference, unordered_set<int> mask, 
 * @param cutoff Cutoff to use
 */
 void add_batch(string path, int cutoff);
+
+/**
+* @brief Comptue a small matrix single threaded, returning distances. To be used by Python API
+*
+* @param samples Vector of samples to compute matrix for
+* @returns Vector of distances
+*/
+vector<tuple<string, string, int>> small_matrix(vector<Sample*> samples);
+
+/**
+* @brief Comptue a small matrix multi-threaded, returning distances. To be used by Python API
+*
+* @param samples Vector of samples to compute matrix for
+* @returns Vector of distances
+*/
+vector<tuple<string, string, int>> multi_matrix(vector<Sample*> samples, int thread_count = 4);
