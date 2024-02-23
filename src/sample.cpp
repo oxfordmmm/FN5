@@ -1,4 +1,5 @@
 #include "include/sample.hpp"
+#include <stdexcept>
 
 /**
 * @brief Definition of the `Sample` class, and functions for saving and loading samples
@@ -11,8 +12,7 @@ Sample::Sample(string filename, string reference, unordered_set<int> mask, strin
     char ch;
     fstream fin(filename, fstream::in);
     if(!fin.good()){
-        cout << "No such FASTA file " << filename << endl;
-        exit(1);
+        throw invalid_argument("No such FASTA file " + filename);
     }
     //Deal with the header first
     //Assume last pipe separated value in header is UUID (at least for now)
@@ -159,8 +159,7 @@ unordered_set<int> Sample::dist_x(vector<int> this_x, vector<int> this_n, vector
 void save_n(vector<int> to_save, string filename){
     fstream out(filename, fstream::binary | fstream::out);
     if(!out.good()){
-        cout << "Error writing save file: " << filename << endl;
-        exit(1);
+        throw invalid_argument("Error writing save file: " + filename);
     }
 
     for(const int elem: to_save){
@@ -176,8 +175,7 @@ vector<int> load_n(string filename){
     //ate flag seeks to the end of the file
     fstream in(filename, fstream::binary | fstream::in | fstream::ate);
     if(!in.good()){
-        cout << "Invalid save path: " << filename << endl;
-        exit(1);
+        throw invalid_argument("Invalid save path: " + filename);
     }
     //Get the size of the file in bytes (we have to convert this as 1 int == 4 bytes)
     int size = in.tellg();
@@ -276,8 +274,7 @@ string load_reference(string filename){
     char ch;
     fstream fin(filename, fstream::in);
     if(!fin.good()){
-        cout << "Invalid reference genome: " << filename << endl;
-        exit(1);
+        throw invalid_argument("Invalid reference genome: " + filename);
     }
 
     //First line is the header, but for this we don't care about it
@@ -309,8 +306,7 @@ unordered_set<int> load_mask(string filename){
     }
     fstream fin2(filename, fstream::in);
     if(!fin2.good()){
-        cout << "Invalid mask path: " << filename << endl;
-        exit(1);
+        throw invalid_argument("Invalid mask path: " + filename);
     }
     string acc;
     char ch;

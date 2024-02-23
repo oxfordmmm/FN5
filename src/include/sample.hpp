@@ -13,6 +13,7 @@
 #include <filesystem>
 #include <thread>
 #include <tuple>
+#include <stdexcept>
 
 /**
 * @brief Definition of the `Sample` class, and functions for saving and loading samples

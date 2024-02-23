@@ -1,4 +1,5 @@
 #include "include/comparisons.hpp"
+#include <exception>
 
 namespace fs = std::filesystem;
 
@@ -122,8 +123,7 @@ vector<Sample*> bulk_load(string path, string reference, unordered_set<int> mask
     char ch;
     fstream pathsFile(path, fstream::in);
     if(!pathsFile.good()){
-        cout << "Invalid path to line separated paths: " << path << endl;
-        exit(1);
+        throw invalid_argument("Invalid path to line separated paths: " + path);
     }
     string f;
     while(pathsFile >> noskipws >> ch){
@@ -314,9 +314,8 @@ void add_many(string path, string reference, unordered_set<int> mask, int cutoff
     char ch;
     string acc;
     fstream fin(path, fstream::in);
-        if(!fin.good()){
-        cout << "Invalid path to line separated paths: " << path << endl;
-        exit(1);
+    if(!fin.good()){
+        throw invalid_argument("Invalid path to line separated paths: " + path);
     }
     while (fin >> noskipws >> ch) {
         if(ch == '\n'){
@@ -582,38 +581,7 @@ void add_batch(string path, int cutoff){
 
 }
 
-vector<tuple<string, string, int>> small_matrix(vector<Sample*> samples){
-    // Compute small matrix without cutoff, storing distances in ram for returning via python api
-    // Note that this does not have an explict size cutoff, but it's up to the user to determine acceptable time/resource usage
-
-    vector<tuple<string, string, int>> distances;
-    // vector<vector<int>> distances;
-    // for(int i=0;i<samples.size();i++){
-    //     vector<int> dists;
-    //     for(int j=0;j<samples.size();j++){
-    //         dists.push_back(samples.at(i)->dist(samples.at(j), 999999));
-    //     }
-    //     distances.push_back(dists);
-    // }
-    unordered_set<string> seen;
-    for(int i=0;i<samples.size();i++){
-        Sample *s1 = samples.at(i);
-        seen.insert(s1->uuid);
-        for(int j=0;j<samples.size();j++){
-            Sample *s2 = samples.at(j);
-            if(seen.contains(s2->uuid)){
-                //We've already done this comparison
-                continue;
-            }
-            else{
-                distances.push_back(make_tuple(s1->uuid, s2->uuid, s1->dist(s2, 999999)));
-            }
-        }
-    }
-    return distances;
-}
-
-vector<tuple<string, string, int>> ret_distances(vector<tuple<Sample*, Sample*>> comparisons){
+vector<tuple<string, string, int>> ret_distances(vector<tuple<Sample*, Sample*>> comparisons, int cutoff){
     //To be used by Thread to do comparisons in parallel with no cutoff
     vector<tuple<string, string, int>> distances;
     for(int i=0;i<comparisons.size();i++){
@@ -622,7 +590,7 @@ vector<tuple<string, string, int>> ret_distances(vector<tuple<Sample*, Sample*>>
         if(s1->uuid == s2->uuid){
             continue;
         }
-        int dist = s1->dist(s2, 999999);
+        int dist = s1->dist(s2, cutoff);
         
         distances.push_back(make_tuple(s1->uuid, s2->uuid, dist));
     }
@@ -630,7 +598,7 @@ vector<tuple<string, string, int>> ret_distances(vector<tuple<Sample*, Sample*>>
     return distances;
 }
 
-vector<tuple<string, string, int>> multi_matrix(vector<Sample *> samples, int thread_count){
+vector<tuple<string, string, int>> multi_matrix(vector<Sample *> samples, int thread_count, int cutoff){
     unordered_set<string> seen;
     vector<tuple<Sample*, Sample*>> comparisons;
     for(int i=0;i<samples.size();i++){
@@ -655,12 +623,12 @@ vector<tuple<string, string, int>> multi_matrix(vector<Sample *> samples, int th
 
     for(int i=0;i<thread_count;i++){
         vector<tuple<Sample*, Sample*>> these(comparisons.begin() + i*chunk_size, comparisons.begin() + i*chunk_size + chunk_size);
-        promises.push_back(async(&ret_distances, these));
+        promises.push_back(async(&ret_distances, these, cutoff));
     }
     //Catch ones missed at the end due to rounding (doing on main thread)
     for(int i=chunk_size*thread_count;i<comparisons.size();i++){
         tuple<Sample*, Sample*> val = comparisons.at(i);
-        int dist = get<0>(val)->dist(get<1>(val), 999999);
+        int dist = get<0>(val)->dist(get<1>(val), cutoff);
         distances.push_back(make_tuple(get<0>(val)->uuid, get<1>(val)->uuid, dist));
     }
 
