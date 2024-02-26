@@ -591,8 +591,9 @@ vector<tuple<string, string, int>> ret_distances(vector<tuple<Sample*, Sample*>>
             continue;
         }
         int dist = s1->dist(s2, cutoff);
-        
-        distances.push_back(make_tuple(s1->uuid, s2->uuid, dist));
+        if(dist <= cutoff){
+            distances.push_back(make_tuple(s1->uuid, s2->uuid, dist));
+        }
     }
     // Future return
     return distances;
@@ -629,7 +630,9 @@ vector<tuple<string, string, int>> multi_matrix(vector<Sample *> samples, int th
     for(int i=chunk_size*thread_count;i<comparisons.size();i++){
         tuple<Sample*, Sample*> val = comparisons.at(i);
         int dist = get<0>(val)->dist(get<1>(val), cutoff);
-        distances.push_back(make_tuple(get<0>(val)->uuid, get<1>(val)->uuid, dist));
+        if(dist <= cutoff){
+            distances.push_back(make_tuple(get<0>(val)->uuid, get<1>(val)->uuid, dist));
+        }
     }
 
     //Join the threads
