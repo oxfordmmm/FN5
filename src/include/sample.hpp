@@ -14,6 +14,7 @@
 #include <thread>
 #include <tuple>
 #include <stdexcept>
+#include <algorithm>
 
 /**
 * @brief Definition of the `Sample` class, and functions for saving and loading samples
