@@ -1,8 +1,16 @@
 # Based on example https://github.com/pybind/python_example
 from pybind11.setup_helpers import Pybind11Extension
 from setuptools import setup
+from pathlib import Path
 
-__version__ = "1.2.0"
+__version__ = "1.2.0rc"
+
+try:
+    this_directory = Path(__file__).parent
+    long_description = (this_directory / "PYTHON_README.md").read_text()
+except FileNotFoundError:
+    # Issues around packaging other readme means we can just skip on install
+    long_description = "Fast, scalable SNP distance calculation from disk."
 
 ext_modules = [
     Pybind11Extension(
@@ -22,9 +30,12 @@ setup(
     author_email="jeremy.westhead@ndm.ox.ac.uk",
     url="https://github.com/oxfordmmm/FN5",
     description="Fast, scalable SNP distance calculation from disk.",
-    long_description="",
     ext_modules=ext_modules,
     zip_safe=False,
     python_requires=">=3.7",
-    license="University of Oxford, see LICENSE"
+    license="University of Oxford, see LICENSE",
+    long_description=long_description,
+    long_description_content_type='text/markdown',
+    include_package_data=True,
+    package_data={'fn5': ['./**']}
 )

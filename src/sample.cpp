@@ -116,8 +116,9 @@ bool Sample::operator== (const Sample &s2) const{
     return check;
 }
 
-int Sample::dist(Sample* sample, int cutoff){
+int Sample::dist(Sample* sample, int cutoff_){
     unordered_set<int> acc;
+    unsigned int cutoff = cutoff_;
     acc = dist_x(A, N, sample->A, sample->N, acc, cutoff);
     acc = dist_x(C, N, sample->C, sample->N, acc, cutoff);
     acc = dist_x(T, N, sample->T, sample->N, acc, cutoff);
@@ -125,10 +126,10 @@ int Sample::dist(Sample* sample, int cutoff){
     return acc.size();
 }
 
-unordered_set<int> Sample::dist_x(vector<int> this_x, vector<int> this_n, vector<int> sample_x, vector<int> sample_n, unordered_set<int> acc, int cutoff){
+unordered_set<int> Sample::dist_x(vector<int> this_x, vector<int> this_n, vector<int> sample_x, vector<int> sample_n, unordered_set<int> acc, unsigned int cutoff){
     //Increment cutoff so we can reject distances > cutoff entirely
     cutoff++;
-    for(const int& elem: this_x){
+    for(const int &elem: this_x){
         if(acc.size() == cutoff){
             return acc;
         }
@@ -140,7 +141,7 @@ unordered_set<int> Sample::dist_x(vector<int> this_x, vector<int> this_n, vector
             }
         }
     }
-    for(const int& elem: sample_x){
+    for(const int &elem: sample_x){
         if(acc.size() == cutoff){
             return acc;
         }
@@ -162,7 +163,7 @@ void save_n(vector<int> to_save, string filename){
         throw invalid_argument("Error writing save file: " + filename);
     }
 
-    for(const int elem: to_save){
+    for(const int &elem: to_save){
         const int *p = &elem;
         const char *p_ = (char *) p;
         out.write(p_, 4);
@@ -215,7 +216,7 @@ void save(string filename, Sample* sample){
     }
     filename += sample->uuid;
     vector<char> types = {'A', 'C', 'G', 'T', 'N'};
-    for(int i=0; i<types.size(); i++){
+    for(unsigned int i=0; i<types.size(); i++){
         string f = filename + '.' + types.at(i);
         //Find out which one we need to save
         vector<int> toSave;
@@ -243,7 +244,7 @@ void save(string filename, Sample* sample){
 Sample* readSample(string filename){
     vector<char> types = {'A', 'C', 'G', 'T', 'N'};
     vector<vector<int>> loading;
-    for(int i=0; i<types.size(); i++){
+    for(unsigned int i=0; i<types.size(); i++){
         string f = filename + '.' + types.at(i);
         loading.push_back(load_n(f));
     }
@@ -255,7 +256,7 @@ Sample* readSample(string filename){
         //Remove trailing / if req
         filename.pop_back();
     }
-    for(int i=0;i<filename.size();i++){
+    for(unsigned int i=0;i<filename.size();i++){
         if(filename.at(i) == '/'){
             //We only want the last part, so reset
             uuid = "";

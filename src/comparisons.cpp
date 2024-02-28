@@ -19,7 +19,7 @@ bool debug = false;
 
 vector<Sample*> load_saves(){
     unordered_set<string> saves;
-    for (const auto & entry : fs::directory_iterator(save_dir)){
+    for (const auto &entry : fs::directory_iterator(save_dir)){
         string p = entry.path();
         //Check for .gitkeep or nothing (we want to ignore this)
         if(p == save_dir+"/.gitkeep" || p == save_dir){
@@ -37,7 +37,7 @@ vector<Sample*> load_saves(){
     }
 
     vector<Sample*> samples;
-    for(const string elem: saves){
+    for(const string &elem: saves){
         Sample *s = readSample(elem);
         samples.push_back(s);
     }
@@ -47,12 +47,12 @@ vector<Sample*> load_saves(){
 
 void load_save_thread(vector<string> filenames, vector<Sample*> *acc){
     vector<Sample*> samples;
-    for(int i=0;i<filenames.size();i++){
+    for(unsigned int i=0;i<filenames.size();i++){
         samples.push_back(readSample(filenames.at(i)));
     }
 
     mutex_lock.lock();
-        for(int i=0;i<samples.size();i++){
+        for(unsigned int i=0;i<samples.size();i++){
             acc->push_back(samples.at(i));
         }
     mutex_lock.unlock();
@@ -60,7 +60,7 @@ void load_save_thread(vector<string> filenames, vector<Sample*> *acc){
 
 vector<Sample*> load_saves_multithreaded(){
     unordered_set<string> saves;
-    for (const auto & entry : fs::directory_iterator(save_dir)){
+    for (const auto &entry : fs::directory_iterator(save_dir)){
         string p = entry.path();
         //Check for .gitkeep or nothing (we want to ignore this)
         if(p == save_dir+"/.gitkeep" || p == save_dir){
@@ -79,7 +79,7 @@ vector<Sample*> load_saves_multithreaded(){
 
     vector<Sample*> acc;
     vector<string> filenames;
-    for(const string elem: saves){
+    for(const string &elem: saves){
         filenames.push_back(elem);
     }
 
@@ -91,12 +91,12 @@ vector<Sample*> load_saves_multithreaded(){
     }
     //Catch ones missed at the end due to rounding (doing on main thread)
     vector<string> missed;
-    for(int i=chunk_size*thread_count;i<filenames.size();i++){
+    for(unsigned int i=chunk_size*thread_count;i<filenames.size();i++){
         missed.push_back(filenames.at(i));
     }
     load_save_thread(missed, &acc);
 
-    for(int i=0;i<threads.size();i++){
+    for(unsigned int i=0;i<threads.size();i++){
         threads.at(i).join();
     }
 
@@ -105,7 +105,7 @@ vector<Sample*> load_saves_multithreaded(){
 
 void parse_n(vector<string> paths, string reference, unordered_set<int> mask, vector<Sample*> *acc){
     //Load all of the samples in `paths`
-    for(const string path: paths){
+    for(const string &path: paths){
         Sample *s = new Sample(path, reference, mask);
         
         mutex_lock.lock();
@@ -160,7 +160,7 @@ vector<Sample*> bulk_load(string path, string reference, unordered_set<int> mask
         threads.push_back(thread(parse_n, these, reference, mask, &samples));
     }
     //Catch ones missed at the end due to rounding (doing on main thread)
-    for(int i=chunk_size*thread_count;i<filepaths.size();i++){
+    for(unsigned int i=chunk_size*thread_count;i<filepaths.size();i++){
         Sample *s = new Sample(filepaths.at(i), reference, mask);
         mutex_lock.lock();
             samples.push_back(s);
@@ -169,7 +169,7 @@ vector<Sample*> bulk_load(string path, string reference, unordered_set<int> mask
     }
 
     //Join the threads
-    for(int i=0;i<threads.size();i++){
+    for(unsigned int i=0;i<threads.size();i++){
         threads.at(i).join();
     }
 
@@ -180,7 +180,7 @@ void save_comparisons(vector<tuple<string, string, int>> comparisons){
     //Save some comparisons to disk in a threadsafe manner
     mutex_lock.lock();
         fstream output(output_file, fstream::app);
-        for(const tuple<string, string, int> elem: comparisons){
+        for(const tuple<string, string, int> &elem: comparisons){
             output << get<0>(elem) << " " << get<1>(elem) << " " << get<2>(elem) << endl;
         }
         output.close();
@@ -190,7 +190,7 @@ void save_comparisons(vector<tuple<string, string, int>> comparisons){
 void print_comparisons(vector<tuple<string, string, int>> comparisons){
     //Save some comparisons to disk in a threadsafe manner
     mutex_lock.lock();
-        for(const tuple<string, string, int> elem: comparisons){
+        for(const tuple<string, string, int> &elem: comparisons){
             cout << get<0>(elem) << " " << get<1>(elem) << " " << get<2>(elem) << endl;
         }
     mutex_lock.unlock();
@@ -200,7 +200,7 @@ void do_comparisons_from_disk(vector<string> paths, Sample* sample, int cutoff){
     //To be used by Thread to do comparisons in parallel
     //Used by `add_sample` for multithreading adding a single sample
     vector<tuple<string, string, int>> distances;
-    for(int i=0;i<paths.size();i++){
+    for(unsigned int i=0;i<paths.size();i++){
         Sample *s2 = readSample(paths.at(i));
         if(sample->uuid == s2->uuid){
             //These are the same sample so skip...
@@ -232,7 +232,7 @@ void add_sample(string path, string reference, unordered_set<int> mask, int cuto
 
     //Find all saves
     unordered_set<string> saves_;
-    for (const auto & entry : fs::directory_iterator(save_dir)){
+    for (const auto &entry : fs::directory_iterator(save_dir)){
         string p = entry.path();    
         //Check for .gitkeep or nothing (we want to ignore this)
         if(p == save_dir+"/.gitkeep" || p == save_dir){
@@ -250,7 +250,7 @@ void add_sample(string path, string reference, unordered_set<int> mask, int cuto
     }
     //Load them and perform comparisons
     vector<string> saves;
-    for(const string elem: saves_){
+    for(const string &elem: saves_){
         saves.push_back(elem);
     }
 
@@ -263,13 +263,13 @@ void add_sample(string path, string reference, unordered_set<int> mask, int cuto
     }
     //Catch ones missed at the end due to rounding (doing on main thread)
     vector<string> remaining;
-    for(int i=chunk_size*thread_count;i<saves.size();i++){
+    for(unsigned int i=chunk_size*thread_count;i<saves.size();i++){
         remaining.push_back(saves.at(i));
     }
     do_comparisons_from_disk(remaining, s, cutoff);
 
     //Join the threads
-    for(int i=0;i<threads.size();i++){
+    for(unsigned int i=0;i<threads.size();i++){
         threads.at(i).join();
     }
 
@@ -280,7 +280,7 @@ void add_sample(string path, string reference, unordered_set<int> mask, int cuto
 void do_comparisons(vector<tuple<Sample*, Sample*>> comparisons, int cutoff){
     //To be used by Thread to do comparisons in parallel
     vector<tuple<string, string, int>> distances;
-    for(int i=0;i<comparisons.size();i++){
+    for(unsigned int i=0;i<comparisons.size();i++){
         Sample *s1 = get<0>(comparisons.at(i));
         Sample *s2 = get<1>(comparisons.at(i));
         if(s1->uuid == s2->uuid){
@@ -345,7 +345,7 @@ void add_many(string path, string reference, unordered_set<int> mask, int cutoff
         threads.push_back(thread(parse_n, these, reference, mask, &others));
     }
     //Catch ones missed at the end due to rounding (doing on main thread)
-    for(int i=chunk_size*thread_count;i<other_paths.size();i++){
+    for(unsigned int i=chunk_size*thread_count;i<other_paths.size();i++){
         Sample *s = new Sample(other_paths.at(i), reference, mask);
         mutex_lock.lock();
             others.push_back(s);
@@ -354,14 +354,14 @@ void add_many(string path, string reference, unordered_set<int> mask, int cutoff
     }
 
     //Join the threads
-    for(int i=0;i<threads.size();i++){
+    for(unsigned int i=0;i<threads.size();i++){
         threads.at(i).join();
     }
 
     vector<tuple<Sample*, Sample*>> comparisons;
     //Compare each new one with an each existing comparison
-    for(int i=0;i<existing.size();i++){
-        for(int j=0;j<others.size();j++){
+    for(unsigned int i=0;i<existing.size();i++){
+        for(unsigned int j=0;j<others.size();j++){
             if(existing.at(i)->uuid == others.at(j)->uuid){
                 continue;
             }
@@ -370,10 +370,10 @@ void add_many(string path, string reference, unordered_set<int> mask, int cutoff
     }
     //And compare each new one against other new ones
     unordered_set<string> seen;
-    for(int i=0;i<others.size();i++){
+    for(unsigned int i=0;i<others.size();i++){
         Sample *s1 = others.at(i);
         seen.insert(s1->uuid);
-        for(int j=0;j<others.size();j++){
+        for(unsigned int j=0;j<others.size();j++){
             Sample *s2 = others.at(j);
             if(seen.contains(s2->uuid)){
                 continue;
@@ -396,7 +396,7 @@ void add_many(string path, string reference, unordered_set<int> mask, int cutoff
     }
     //Catch ones missed at the end due to rounding (doing on main thread)
 
-    for(int i=chunk_size*thread_count;i<comparisons.size();i++){
+    for(unsigned int i=chunk_size*thread_count;i<comparisons.size();i++){
         tuple<Sample*, Sample*> val = comparisons.at(i);
         if(get<0>(val)->uuid == get<1>(val)->uuid){
         }
@@ -409,7 +409,7 @@ void add_many(string path, string reference, unordered_set<int> mask, int cutoff
     }
 
     //Join the threads
-    for(int i=0;i<threads2.size();i++){
+    for(unsigned int i=0;i<threads2.size();i++){
         threads2.at(i).join();
     }
 }
@@ -426,7 +426,7 @@ void compare_row(string path, string reference, unordered_set<int> mask, int cut
     int closest_dist = 999999999;
     string closest_uuid = "";
     bool found_within_cutoff = false;
-    for(int i=0;i<samples.size();i++){
+    for(unsigned int i=0;i<samples.size();i++){
         if(samples.at(i)->uuid == s->uuid){
             //Same sample
             continue;
@@ -458,10 +458,10 @@ void compute_loaded(int cutoff, vector<Sample*> samples){
     //Construct list of comparisons (but don't actually do any of them yet)
     vector<tuple<Sample*, Sample*>> comparisons;
     unordered_set<string> seen;
-    for(int i=0;i<samples.size();i++){
+    for(unsigned int i=0;i<samples.size();i++){
         Sample *s1 = samples.at(i);
         seen.insert(s1->uuid);
-        for(int j=0;j<samples.size();j++){
+        for(unsigned int j=0;j<samples.size();j++){
             Sample *s2 = samples.at(j);
             if(seen.contains(s2->uuid)){
                 //We've already done this comparison
@@ -489,7 +489,7 @@ void compute_loaded(int cutoff, vector<Sample*> samples){
     }
     //Catch ones missed at the end due to rounding (doing on main thread)
     vector<tuple<string, string, int>> distances;
-    for(int i=chunk_size*thread_count;i<comparisons.size();i++){
+    for(unsigned int i=chunk_size*thread_count;i<comparisons.size();i++){
         tuple<Sample*, Sample*> val = comparisons.at(i);
         int dist = get<0>(val)->dist(get<1>(val), cutoff);
         if(dist <= cutoff){
@@ -499,7 +499,7 @@ void compute_loaded(int cutoff, vector<Sample*> samples){
     print_comparisons(distances);
 
     //Join the threads
-    for(int i=0;i<threads.size();i++){
+    for(unsigned int i=0;i<threads.size();i++){
         threads.at(i).join();
     }
 
@@ -523,8 +523,8 @@ void add_batch(string path, int cutoff){
 
     vector<tuple<Sample*, Sample*>> comparisons;
     //Compare each new one with an each existing comparison
-    for(int i=0;i<existing.size();i++){
-        for(int j=0;j<to_add.size();j++){
+    for(unsigned int i=0;i<existing.size();i++){
+        for(unsigned int j=0;j<to_add.size();j++){
             if(existing.at(i)->uuid == to_add.at(j)->uuid){
                 continue;
             }
@@ -533,10 +533,10 @@ void add_batch(string path, int cutoff){
     }
     //And compare each new one against other new ones
     unordered_set<string> seen;
-    for(int i=0;i<to_add.size();i++){
+    for(unsigned int i=0;i<to_add.size();i++){
         Sample *s1 = to_add.at(i);
         seen.insert(s1->uuid);
-        for(int j=0;j<to_add.size();j++){
+        for(unsigned int j=0;j<to_add.size();j++){
             Sample *s2 = to_add.at(j);
             if(seen.contains(s2->uuid)){
                 continue;
@@ -557,7 +557,7 @@ void add_batch(string path, int cutoff){
 
     //Catch ones missed at the end due to rounding (doing on main thread)
     vector<tuple<string, string, int>> distances;
-    for(int i=chunk_size*thread_count;i<comparisons.size();i++){
+    for(unsigned int i=chunk_size*thread_count;i<comparisons.size();i++){
         tuple<Sample*, Sample*> val = comparisons.at(i);
         if(get<0>(val)->uuid == get<1>(val)->uuid){
         }
@@ -573,7 +573,7 @@ void add_batch(string path, int cutoff){
     print_comparisons(distances);
 
     //Join the threads
-    for(int i=0;i<threads.size();i++){
+    for(unsigned int i=0;i<threads.size();i++){
         threads.at(i).join();
     }
 
@@ -584,7 +584,7 @@ void add_batch(string path, int cutoff){
 vector<tuple<string, string, int>> ret_distances(vector<tuple<Sample*, Sample*>> comparisons, int cutoff){
     //To be used by Thread to do comparisons in parallel with no cutoff
     vector<tuple<string, string, int>> distances;
-    for(int i=0;i<comparisons.size();i++){
+    for(unsigned int i=0;i<comparisons.size();i++){
         Sample *s1 = get<0>(comparisons.at(i));
         Sample *s2 = get<1>(comparisons.at(i));
         if(s1->uuid == s2->uuid){
@@ -600,12 +600,18 @@ vector<tuple<string, string, int>> ret_distances(vector<tuple<Sample*, Sample*>>
 }
 
 vector<tuple<string, string, int>> multi_matrix(vector<Sample *> samples, int thread_count, int cutoff){
+    if(thread_count < 1){
+        throw invalid_argument("Invalid thread_count. Should be > 0");
+    }
+    if(cutoff < 1){
+        throw invalid_argument("Invalid cutoff. Should be > 0");
+    }
     unordered_set<string> seen;
     vector<tuple<Sample*, Sample*>> comparisons;
-    for(int i=0;i<samples.size();i++){
+    for(unsigned int i=0;i<samples.size();i++){
         Sample *s1 = samples.at(i);
         seen.insert(s1->uuid);
-        for(int j=0;j<samples.size();j++){
+        for(unsigned int j=0;j<samples.size();j++){
             Sample *s2 = samples.at(j);
             if(seen.contains(s2->uuid)){
                 //We've already done this comparison
@@ -627,7 +633,7 @@ vector<tuple<string, string, int>> multi_matrix(vector<Sample *> samples, int th
         promises.push_back(async(&ret_distances, these, cutoff));
     }
     //Catch ones missed at the end due to rounding (doing on main thread)
-    for(int i=chunk_size*thread_count;i<comparisons.size();i++){
+    for(unsigned int i=chunk_size*thread_count;i<comparisons.size();i++){
         tuple<Sample*, Sample*> val = comparisons.at(i);
         int dist = get<0>(val)->dist(get<1>(val), cutoff);
         if(dist <= cutoff){
@@ -636,9 +642,9 @@ vector<tuple<string, string, int>> multi_matrix(vector<Sample *> samples, int th
     }
 
     //Join the threads
-    for(int i=0;i<promises.size();i++){
+    for(unsigned int i=0;i<promises.size();i++){
         vector<tuple<string, string, int>> dists = promises.at(i).get();
-        for(int j=0;j<dists.size();j++){
+        for(unsigned int j=0;j<dists.size();j++){
             distances.push_back(dists.at(j));
         }
     }

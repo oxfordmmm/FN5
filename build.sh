@@ -3,6 +3,8 @@
 set -e
 
 mkdir -p build
+rm -rf build
+mkdir -p build
 cd build
 
 #Compile fn5
