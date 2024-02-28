@@ -7,6 +7,7 @@ Spiritual successor to [Find Neighbour 4](https://github.com/davidhwyllie/findNe
 SNP matrix generation with caching to disk to allow fast reloading.
 
 # Install
+As this is compiled client side, ensure you have a functional C++ compiler such as GCC installed.
 ```
 # Optional virtual environment
 python -m virtualenv env

@@ -3,7 +3,7 @@ from pybind11.setup_helpers import Pybind11Extension
 from setuptools import setup
 from pathlib import Path
 
-__version__ = "1.2.0rc"
+__version__ = "v1.2.0"
 
 try:
     this_directory = Path(__file__).parent
@@ -17,7 +17,7 @@ ext_modules = [
         "fn5",
         sorted(["src/sample.cpp", "src/comparisons.cpp", "src/fn5_python.cpp"]),
         include_dirs=["src/include"],
-        extra_compile_args=["-std=c++20", "-O3", "-pthread"],
+        extra_compile_args=["-std=c++2a", "-O3", "-pthread"],
         # Example: passing in the version to the compiled code
         define_macros=[("VERSION_INFO", __version__)],
     ),
