@@ -66,3 +66,8 @@ mprofile*
 #Ensure that the test lists are kept
 !test/all.txt
 !test/two_samples.txt
+
+saves.old/*
+
+#Keep the python dist files out
+*.egg-info

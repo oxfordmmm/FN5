@@ -31,7 +31,7 @@ bool check_flag(map<string, string> args, string flag){
 }
 
 bool check_required(map<string, string> args, vector<string> required){
-    for(int i=0;i<required.size();i++){
+    for(unsigned int i=0;i<required.size();i++){
         if(!check_flag(args, required.at(i))){
             //Doesn't have a required flag, so return
             return false;

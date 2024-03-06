@@ -13,6 +13,8 @@
 #include <filesystem>
 #include <thread>
 #include <tuple>
+#include <stdexcept>
+#include <algorithm>
 
 /**
 * @brief Definition of the `Sample` class, and functions for saving and loading samples
@@ -108,7 +110,7 @@ class Sample{
          * @param cutoff Distance to stop caring after (for speed)
          * @return int The distance between the two samples. If dist == cutoff + 1, the sample is further away and shouldn't be counted
          */
-        unordered_set<int> dist_x(vector<int> this_x, vector<int> this_n, vector<int> sample_x, vector<int> sample_n, unordered_set<int> acc, int cutoff);
+        unordered_set<int> dist_x(vector<int> this_x, vector<int> this_n, vector<int> sample_x, vector<int> sample_n, unordered_set<int> acc, unsigned int cutoff);
 };
 
 /**

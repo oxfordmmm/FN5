@@ -3,6 +3,7 @@
 
 #include <mutex>
 #include <tuple>
+#include <future>
 
 /**
 * @brief Code for performing comparisons, writing outputs etc
@@ -177,3 +178,13 @@ void reference_compress(string path, string reference, unordered_set<int> mask, 
 * @param cutoff Cutoff to use
 */
 void add_batch(string path, int cutoff);
+
+/**
+* @brief Comptue a small matrix multi-threaded, returning distances. To be used by Python API
+*
+* @param samples Vector of samples to compute matrix for
+* @param thread_count Number of threads to use. Defaults to 4
+* @param cutoff SNP threshold to cutoff at. Defaults to arbirarily high (999999).
+* @returns Vector of distances
+*/
+vector<tuple<string, string, int>> multi_matrix(vector<Sample*> samples, int thread_count = 4, int cutoff = 9999999);
