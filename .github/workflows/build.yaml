@@ -81,13 +81,12 @@ jobs:
           build
           --user
 
-      - name: Build a binary wheel and a source tarball
-        run: >-
-          python -m
-          build
-          --sdist
-          --outdir dist/
-          .
+      - name: Build a source tarball
+        run: |
+          export FN5_FIRST_PASS="YES"
+          python -m build --sdist --outdir dist
+          unset FN5_FIRST_PASS
+          python -m build --sdist --outdir dist
 
       - name: Publish a Python distribution to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1

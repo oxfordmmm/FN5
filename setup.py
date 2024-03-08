@@ -2,8 +2,9 @@
 from pybind11.setup_helpers import Pybind11Extension
 from setuptools import setup
 from pathlib import Path
+import os
 
-__version__ = "v1.2.0"
+__version__ = "v1.2.2"
 
 try:
     this_directory = Path(__file__).parent
@@ -12,10 +13,20 @@ except FileNotFoundError:
     # Issues around packaging other readme means we can just skip on install
     long_description = "Fast, scalable SNP distance calculation from disk."
 
+# There's some odd behaviour going on here where pip won't install if this has the headers in it, 
+#   but they're required to be distributed with the rest of the files
+# So we have to run `python -m build` first including the headers, 
+#   then again without before running `twine`
+# So control with an env variable for automation
+if os.environ.get("FN5_FIRST_PASS", None):
+    files = sorted(["src/sample.cpp", "src/comparisons.cpp", "src/fn5_python.cpp", "src/include/sample.hpp", "src/include/comparisons.hpp"])
+else:
+    files = sorted(["src/sample.cpp", "src/comparisons.cpp", "src/fn5_python.cpp"])
+
 ext_modules = [
     Pybind11Extension(
         "fn5",
-        sorted(["src/sample.cpp", "src/comparisons.cpp", "src/fn5_python.cpp"]),
+        files,
         include_dirs=["src/include"],
         extra_compile_args=["-std=c++2a", "-O3", "-pthread"],
         # Example: passing in the version to the compiled code
