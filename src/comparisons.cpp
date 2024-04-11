@@ -1,5 +1,6 @@
 #include "include/comparisons.hpp"
 #include <exception>
+#include <filesystem>
 
 namespace fs = std::filesystem;
 
@@ -19,6 +20,9 @@ bool debug = false;
 
 vector<Sample*> load_saves(){
     unordered_set<string> saves;
+    if(fs::is_symlink(save_dir)){
+        save_dir = fs::read_symlink(save_dir);
+    }
     for (const auto &entry : fs::directory_iterator(save_dir)){
         string p = entry.path();
         //Check for .gitkeep or nothing (we want to ignore this)
@@ -60,6 +64,9 @@ void load_save_thread(vector<string> filenames, vector<Sample*> *acc){
 
 vector<Sample*> load_saves_multithreaded(){
     unordered_set<string> saves;
+    if(fs::is_symlink(save_dir)){
+        save_dir = fs::read_symlink(save_dir);
+    }
     for (const auto &entry : fs::directory_iterator(save_dir)){
         string p = entry.path();
         //Check for .gitkeep or nothing (we want to ignore this)
@@ -232,6 +239,9 @@ void add_sample(string path, string reference, unordered_set<int> mask, int cuto
 
     //Find all saves
     unordered_set<string> saves_;
+    if(fs::is_symlink(save_dir)){
+        save_dir = fs::read_symlink(save_dir);
+    }
     for (const auto &entry : fs::directory_iterator(save_dir)){
         string p = entry.path();    
         //Check for .gitkeep or nothing (we want to ignore this)
@@ -511,13 +521,8 @@ void reference_compress(string path, string reference, unordered_set<int> mask, 
     cout << s->uuid << endl;
 }
 
-void add_batch(string path, int cutoff, string saves_dir_in){
+void add_batch(string path, int cutoff){
     //**VERY** similar to `add_many`, but starting with reference compressed sequences
-    if(saves_dir_in != ""){
-        // If the saves dir is set on the CLI, use it.
-        save_dir = saves_dir_in;
-    }
-
     vector<Sample*> existing = load_saves_multithreaded();
     
     //Use the same method to load the new saves

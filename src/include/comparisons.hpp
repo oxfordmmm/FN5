@@ -176,9 +176,8 @@ void reference_compress(string path, string reference, unordered_set<int> mask, 
 *
 * @param path Path to a directory of the saves to add
 * @param cutoff Cutoff to use
-* @param saves_dir_in Path to the saves dir to use
 */
-void add_batch(string path, int cutoff, string saves_dir_in);
+void add_batch(string path, int cutoff);
 
 /**
 * @brief Comptue a small matrix multi-threaded, returning distances. To be used by Python API
