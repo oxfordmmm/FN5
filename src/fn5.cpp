@@ -14,6 +14,7 @@ int main(int nargs, const char* args_[]){
         }
     }
     map<string, string> args = parse_args(nargs, args_);
+    string saves_dir_in;
 
     //Check to see if values are supplied or we need to use default
     if(check_flag(args, "--threads")){
@@ -24,10 +25,10 @@ int main(int nargs, const char* args_[]){
         }
     }
     if(check_flag(args, "--saves_dir")){
-        save_dir = args.at("--saves_dir");
+        saves_dir_in = args.at("--saves_dir");
         //Ensure no trailing / for consistency
-        if(save_dir[save_dir.size()-1] == '/'){
-            save_dir.pop_back();
+        if(saves_dir_in[saves_dir_in.size()-1] == '/'){
+            saves_dir_in.pop_back();
         }
     }
     if(check_flag(args, "--output_file")){
@@ -60,7 +61,8 @@ int main(int nargs, const char* args_[]){
     }
 
     if(check_flag(args, "--add_batch")){
-        add_batch(args.at("--add_batch"), cutoff);
+        add_batch(args.at("--add_batch"), cutoff, saves_dir_in);
+        return 0;
     }
     
     string reference = load_reference(ref_genome_path);

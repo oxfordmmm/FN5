@@ -511,8 +511,13 @@ void reference_compress(string path, string reference, unordered_set<int> mask, 
     cout << s->uuid << endl;
 }
 
-void add_batch(string path, int cutoff){
+void add_batch(string path, int cutoff, string saves_dir_in){
     //**VERY** similar to `add_many`, but starting with reference compressed sequences
+    if(saves_dir_in != ""){
+        // If the saves dir is set on the CLI, use it.
+        save_dir = saves_dir_in;
+    }
+
     vector<Sample*> existing = load_saves_multithreaded();
     
     //Use the same method to load the new saves
