@@ -93,7 +93,7 @@ PYBIND11_MODULE(fn5, m) {
         -----------------------
 
         Args:
-            path (str): Base path to save to. Produces 5 files of <uuid>.A, <uuid>.C, ...
+            path (str): Directory to save to. Creates 1 file of `<path>/<uuid>.fn5`
             sample (fn5.Sample): Sample to save
         )pbdoc", py::arg("path"), py::arg("sample"));
     m.def("load", &readSample, R"pbdoc(
@@ -101,7 +101,7 @@ PYBIND11_MODULE(fn5, m) {
         -----------------------
 
         Args:
-            path (str): Base path to load from. i.e <some path>/<uuid> will load sample <uuid>
+            path (str): Path to load from. i.e <some path>/<uuid> or <some path>/<uuid>.fn5 will load sample <uuid>
         
         Returns:
             fn5.Sample: Loaded sample.
