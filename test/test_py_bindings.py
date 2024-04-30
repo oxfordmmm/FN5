@@ -31,3 +31,29 @@ def test_1():
         expected_map[(b, a)] = dist
     
     assert actual_map == expected_map
+
+def test_1_saves():
+    '''This should be all comparisons, using saves rather than fastas
+    '''
+    samples = [fn5.load("test/saves/sample1.fn5"), fn5.load("test/saves/sample2.fn5"), fn5.load("test/saves/sample3.fn5"), fn5.load("test/saves/sample4.fn5"),]
+
+    actual = set(fn5.compute(samples))
+    actual_map = {}
+    for a, b, dist in actual:
+        actual_map[(a, b)] = dist
+        actual_map[(b, a)] = dist
+    expected = [
+        "sample4 sample1 12",
+        "sample4 sample3 11",
+        "sample4 sample2 11",
+        "sample1 sample3 1",
+        "sample1 sample2 1",
+        "sample3 sample2 0",
+        ]
+    expected = set([(x.split(" ")[0], x.split(" ")[1], int(x.split(" ")[2])) for x in expected])
+    expected_map = {}
+    for a, b, dist in expected:
+        expected_map[(a, b)] = dist
+        expected_map[(b, a)] = dist
+    
+    assert actual_map == expected_map
