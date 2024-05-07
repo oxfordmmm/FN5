@@ -70,19 +70,7 @@ Sample::Sample(string filename, string reference, unordered_set<int> mask, strin
                 case 'T':
                     T.push_back(i);
                     break;
-                case 'N':
-                    N.push_back(i);
-                    break;
-                case '-':
-                    N.push_back(i);
-                    break;
-                case 'X':
-                    N.push_back(i);
-                    break;
-                case 'O':
-                    N.push_back(i);
-                    break;
-                case 'Z':
+                default:
                     N.push_back(i);
                     break;
             }
@@ -328,7 +316,7 @@ Sample* readSample(string filename){
         try{
             return load_old(filename);
         }
-        catch (invalid_argument err) {
+        catch (invalid_argument &err) {
             // Not valid so try version with added `.fn5`
             // Mostly covering the gpas API use case
             filename += ".fn5";
