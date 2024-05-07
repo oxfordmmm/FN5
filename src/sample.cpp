@@ -79,6 +79,12 @@ Sample::Sample(string filename, string reference, unordered_set<int> mask, strin
     }
     fin.close();
 
+    // Check that this file is the same length as the reference
+    int ref_size = reference.size(); // Cast to int to avoid warnings
+    if(i != ref_size){
+        throw invalid_argument("File " + filename + " is not the same length as the reference genome");
+    }
+
     //For a basic QC check we want to ensure that <20% of the sample is N
     //This should infer that the sample is >=80% ACGT
     //Inherently ref has no Ns, so total Ns == this->N.size()
