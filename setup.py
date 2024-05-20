@@ -4,7 +4,7 @@ from setuptools import setup
 from pathlib import Path
 import os
 
-__version__ = "v2.0.1"
+__version__ = "v2.0.2"
 
 try:
     this_directory = Path(__file__).parent
