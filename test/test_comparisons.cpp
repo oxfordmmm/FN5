@@ -95,7 +95,7 @@ TEST(comparisons, load_save_thread){
 
 
     vector<Sample*> acc;
-    vector<string> filenames = {"cases/dummy/saves/uuid1", "cases/dummy/saves/uuid2", "cases/dummy/saves/uuid3", "cases/dummy/saves/uuid4", "cases/dummy/saves/uuid5"};
+    vector<string> filenames = {"cases/dummy/saves/uuid1.fn5", "cases/dummy/saves/uuid2.fn5", "cases/dummy/saves/uuid3.fn5", "cases/dummy/saves/uuid4.fn5", "cases/dummy/saves/uuid5.fn5"};
     load_save_thread(filenames, &acc);
 
     ASSERT_TRUE(vectors_equal(expected, acc));
@@ -239,8 +239,8 @@ TEST(comparisons, print_comparisons){
 TEST(comparisons, do_comparisons_from_disk){
     output_file = "test_do_comparisons_from_disk.txt";
     
-    vector<string> paths = {"cases/dummy/saves/uuid1", "cases/dummy/saves/uuid2", "cases/dummy/saves/uuid3", "cases/dummy/saves/uuid4"};
-    Sample *s = readSample("cases/dummy/saves/uuid5");
+    vector<string> paths = {"cases/dummy/saves/uuid1.fn5", "cases/dummy/saves/uuid2.fn5", "cases/dummy/saves/uuid3.fn5", "cases/dummy/saves/uuid4.fn5"};
+    Sample *s = readSample("cases/dummy/saves/uuid5.fn5");
 
     //Ensure output file is empty first
     fstream out(output_file, fstream::out);

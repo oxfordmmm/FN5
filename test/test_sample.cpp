@@ -515,11 +515,11 @@ TEST(sample, save_load){
     save("cases/dummy/saves", s4);
     save("cases/dummy/saves", s5);
 
-    Sample* s1_save = readSample("cases/dummy/saves/uuid1");
-    Sample* s2_save = readSample("cases/dummy/saves/uuid2");
-    Sample* s3_save = readSample("cases/dummy/saves/uuid3");
-    Sample* s4_save = readSample("cases/dummy/saves/uuid4");
-    Sample* s5_save = readSample("cases/dummy/saves/uuid5");
+    Sample* s1_save = readSample("cases/dummy/saves/uuid1.fn5");
+    Sample* s2_save = readSample("cases/dummy/saves/uuid2.fn5");
+    Sample* s3_save = readSample("cases/dummy/saves/uuid3.fn5");
+    Sample* s4_save = readSample("cases/dummy/saves/uuid4.fn5");
+    Sample* s5_save = readSample("cases/dummy/saves/uuid5.fn5");
 
     ASSERT_EQ(*s1, *s1_save);
     ASSERT_EQ(*s2, *s2_save);

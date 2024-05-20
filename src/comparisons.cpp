@@ -17,7 +17,7 @@ string exclude_mask_path = "tb-exclude.txt";
 
 bool debug = false;
 
-vector<Sample*> load_saves(){
+unordered_set<string> find_saves(){
     unordered_set<string> saves;
     for (const auto &entry : fs::directory_iterator(save_dir)){
         string p = entry.path();
@@ -26,15 +26,31 @@ vector<Sample*> load_saves(){
             continue;
         }
         
-        //Remove `.A` etc
-        p.pop_back();
-        p.pop_back();
+        if(p.at(p.size()-2) == '.'){
+            // 1 character file extension so likely old `.A` format
+            // Remove file extension in such cases to match old loading format
+            p.pop_back();
+            p.pop_back();
+        }
+        else {
+            // Not a 1 character file extension so check if `.fn5`
+            string ext = p.substr(p.find_last_of(".")+1);
+            if(ext != "fn5" && ext != "FN5"){
+                //  Not valid file extension for new saves so skip
+                continue;
+            }
+        }
 
         //Only add if the path found is not empty
         if(p.find_first_not_of(' ') != string::npos){
             saves.insert(p);
         }
     }
+    return saves;
+}
+
+vector<Sample*> load_saves(){
+    unordered_set<string> saves = find_saves();
 
     vector<Sample*> samples;
     for(const string &elem: saves){
@@ -59,23 +75,7 @@ void load_save_thread(vector<string> filenames, vector<Sample*> *acc){
 }
 
 vector<Sample*> load_saves_multithreaded(){
-    unordered_set<string> saves;
-    for (const auto &entry : fs::directory_iterator(save_dir)){
-        string p = entry.path();
-        //Check for .gitkeep or nothing (we want to ignore this)
-        if(p == save_dir+"/.gitkeep" || p == save_dir){
-            continue;
-        }
-        
-        //Remove `.A` etc
-        p.pop_back();
-        p.pop_back();
-
-        //Only add if the path found is not empty
-        if(p.find_first_not_of(' ') != string::npos){
-            saves.insert(p);
-        }
-    }
+    unordered_set<string> saves = find_saves();
 
     vector<Sample*> acc;
     vector<string> filenames;
@@ -231,23 +231,7 @@ void add_sample(string path, string reference, unordered_set<int> mask, int cuto
     Sample *s = new Sample(path, reference, mask);
 
     //Find all saves
-    unordered_set<string> saves_;
-    for (const auto &entry : fs::directory_iterator(save_dir)){
-        string p = entry.path();    
-        //Check for .gitkeep or nothing (we want to ignore this)
-        if(p == save_dir+"/.gitkeep" || p == save_dir){
-            continue;
-        }
-        
-        //Remove `.A` etc
-        p.pop_back();
-        p.pop_back();
-
-        //Only add if the path found is not empty
-        if(p.find_first_not_of(' ') != string::npos){
-            saves_.insert(p);
-        }
-    }
+    unordered_set<string> saves_ = find_saves();
     //Load them and perform comparisons
     vector<string> saves;
     for(const string &elem: saves_){

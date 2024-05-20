@@ -114,7 +114,7 @@ class Sample{
 };
 
 /**
-* @brief Save the contents of an unordered set to disk using binary.
+* @brief **DEPRECIATED** Save the contents of an unordered set to disk using binary.
 *
 * @param to_save Set to save
 * @param filename Output filename
@@ -122,7 +122,7 @@ class Sample{
 void save_n(vector<int> to_save, string filename);
 
 /**
-* @brief Load an unordered set from a binary save on disk
+* @brief **DEPRECIATED** Load an unordered set from a binary save on disk
 *
 * @param filename File to load
 * @returns Unordered set of the ints stored in the file
@@ -132,7 +132,7 @@ vector<int> load_n(string filename);
 /**
 * @brief Save a sample to disk
 * 
-* @param filename Directory to save in. Actual saves will be [<filename>/<uuid>.A, <filename>/<uuid>.C, ...]
+* @param filename Directory to save in. Actual save will be <filename>/<uuid>.fn5
 * @param sample Sample to save
 */
 void save(string filename, Sample* sample);
@@ -140,7 +140,7 @@ void save(string filename, Sample* sample);
 /**
 * @brief Load a sample from disk
 * 
-* @param filename Base filename to load from. Actual saves will be [<filename>.A, <filename>.C, ...]
+* @param filename Base filename to load from. Actual saves will be <filename>/<uuid>.fn5
 * @returns Sample loaded from disk
 */
 Sample* readSample(string filename);
