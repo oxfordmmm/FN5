@@ -1,4 +1,4 @@
-FROM ubuntu:latest
+FROM ubuntu:22.04
 
 #Setup
 RUN apt update --fix-missing
@@ -20,4 +20,4 @@ RUN git clone https://github.com/oxfordmmm/FN5.git && \
     cd FN5 && \
     bash build.sh && \
     cp fn5 /usr/bin/fn5 && \
-    pip install -r requirements.txt --break-system-packages
+    pip install -r requirements.txt
