@@ -28,7 +28,7 @@ ext_modules = [
         "fn5",
         files,
         include_dirs=["src/include"],
-        extra_compile_args=["-std=c++2a", "-O3", "-pthread"],
+        extra_compile_args=["-std=c++2a", "-O3", "-DCMAKE_OSX_DEPLOYMENT_TARGET=10.15", "-pthread"],
         # Example: passing in the version to the compiled code
         define_macros=[("VERSION_INFO", __version__)],
     ),
