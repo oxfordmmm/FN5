@@ -24,7 +24,7 @@ Sample::Sample(string filename, string reference, unordered_set<int> mask, strin
             //Line has ended
             break;
         }
-        if(ch == '|'){
+        if(ch == '|' || ch == '>'){
             //New pipe, so reset
             uuid_ = "";
         }
