@@ -1,6 +1,6 @@
 [build-system]
 build-backend = 'mesonpy'
-requires = ['meson-python', 'pybind11']
+requires = ['meson', 'meson-python', 'pybind11']
 
 [project]
 name = 'fn5'
