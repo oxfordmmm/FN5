@@ -20,8 +20,8 @@ jobs:
     - uses: actions/checkout@v2
     - name: Setup
       run: |
-        sudo apt install g++ python3 python3-pip
-        pip install pytest .
+        sudo apt install g++ python3 python3-pip python3-dev
+        pip install meson pytest .
 
     - name: Compile
       run: |
