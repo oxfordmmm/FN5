@@ -4,7 +4,7 @@ requires = ['meson', 'meson-python', 'pybind11']
 
 [project]
 name = 'fn5'
-version = '2.0.6'
+version = '2.0.7'
 description = 'Fast, scalable SNP distance calculation from disk.'
 readme = 'PYTHON_README.md'
 requires-python = '>=3.8'
