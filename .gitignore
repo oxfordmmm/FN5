@@ -71,3 +71,5 @@ saves.old/*
 
 #Keep the python dist files out
 *.egg-info
+
+.cache
