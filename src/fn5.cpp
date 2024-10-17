@@ -9,7 +9,7 @@ int main(int nargs, const char* args_[]){
     if(nargs == 2){
         string val = args_[1];
         if(val == "--version" || val == "-v"){
-            cout << "v2.0.4" << endl;
+            cout << "v2.0.5" << endl;
             return 0;
         }
     }

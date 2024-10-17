@@ -1,5 +1,5 @@
 project('fn5', 'cpp',
-  version : '2.0.4',
+  version : '2.0.5',
   default_options : ['cpp_std=c++2a', 'optimization=3'])
 
 thread_dep = dependency('threads')
