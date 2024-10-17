@@ -8,10 +8,6 @@ permissions:
   contents: read
 
 jobs:
-  cargo:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
   linux:
     runs-on: ${{ matrix.platform.runner }}
     strategy:
