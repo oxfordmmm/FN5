@@ -16,4 +16,4 @@ RUN apt install -y curl jq pigz
 RUN git clone https://github.com/oxfordmmm/FN5.git && \
     cd FN5 && \
     bash build.sh && \
-    cp fn5 /usr/bin/fn5 && \
+    cp fn5 /usr/bin/fn5
