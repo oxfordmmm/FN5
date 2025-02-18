@@ -7,8 +7,8 @@ on:
 
 env:
   REGISTRY: lhr.ocir.io
-  IMAGE_NAME: ${{ secrets.MMM_NAMESPACE }}/gpas/competitivemapping_pipeline
-  IMAGE_NAME_GPAS_LTD: ${{ secrets.GPAS_LTD_NAMESPACE }}/oxfordmmm/competitivemapping_pipeline
+  IMAGE_NAME: gpas/competitivemapping_pipeline
+  IMAGE_NAME_GPAS_LTD: oxfordmmm/competitivemapping_pipeline
 
 jobs:
   unit-tests:
@@ -87,7 +87,7 @@ jobs:
 
       - name: Set full image registry tag
         run: |
-          echo "FULL_IMAGE_TAG=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:$REVISION" >> $GITHUB_ENV
+          echo "FULL_IMAGE_TAG=${{ env.REGISTRY }}/${{ secrets.MMM_NAMESPACE }}/${{ env.IMAGE_NAME }}:$REVISION" >> $GITHUB_ENV
 
       - name: Build and push
         id: build_and_push
@@ -108,7 +108,7 @@ jobs:
 
       - name: Set full image registry tag
         run: |
-          echo "FULL_IMAGE_TAG=${{ env.REGISTRY }}/${{ env.IMAGE_NAME_GPAS_LTD }}:$REVISION" >> $GITHUB_ENV
+          echo "FULL_IMAGE_TAG=${{ env.REGISTRY }}/${{ secrets.GPAS_LTD_NAMESPACE }}/${{ env.IMAGE_NAME_GPAS_LTD }}:$REVISION" >> $GITHUB_ENV
 
       - name: Build and push
         id: build_and_push_gpas_ltd
