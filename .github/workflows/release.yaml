@@ -5,6 +5,11 @@ on:
     tags:
       - 'v*.*.*'
 
+env:
+  REGISTRY: lhr.ocir.io
+  IMAGE_NAME: ${{ secrets.MMM_NAMESPACE }}/gpas/competitivemapping_pipeline
+  IMAGE_NAME_GPAS_LTD: ${{ secrets.GPAS_LTD_NAMESPACE }}/oxfordmmm/competitivemapping_pipeline
+
 jobs:
   unit-tests:
     name: Run unit tests
@@ -42,35 +47,6 @@ jobs:
         source env/bin/activate
         python3 -m pytest --exitfirst --verbose
 
-  build-docker:
-    runs-on: ubuntu-latest
-    needs: [unit-tests, integration-tests]
-    steps:
-      - uses: actions/checkout@v2
-      - name: Set release version
-        run: echo "RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
-      -
-        name: Login to OCR
-        uses: docker/login-action@v1 
-        with:
-          registry: lhr.ocir.io
-          username: ${{ secrets.OCR_USERNAME }}
-          password: ${{ secrets.OCR_TOKEN }}
-      -
-        name: Build and push
-        id: docker_build
-        uses: docker/build-push-action@v2
-        with:
-          file: environments/Dockerfile
-          tags: |
-            lhr.ocir.io/${{secrets.OCR_NAMESPACE}}/oxfordmmm/fn5:latest
-            lhr.ocir.io/${{secrets.OCR_NAMESPACE}}/oxfordmmm/fn5:${{env.RELEASE_VERSION}}
-          push: true
-          no-cache: true
-      -
-        name: Docker digest
-        run: echo ${{ steps.docker_build.outputs.digest }}
-
   build-pypi:
     runs-on: ubuntu-latest
     needs: [unit-tests, integration-tests]
@@ -97,3 +73,52 @@ jobs:
         with:
           user: __token__
           password: ${{ secrets.PYPI_API_TOKEN }}
+
+  docker_build_push:
+    name: Build and push Docker images
+    runs-on: ubuntu-latest
+    steps:
+      - name: Login to OCR
+        uses: docker/login-action@v2
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ secrets.OCR_USERNAME }}
+          password: ${{ secrets.OCR_TOKEN }}
+
+      - name: Set full image registry tag
+        run: |
+          echo "FULL_IMAGE_TAG=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:$REVISION" >> $GITHUB_ENV
+
+      - name: Build and push
+        id: build_and_push
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          push: true
+          file: Dockerfile
+          tags: |
+            ${{ env.FULL_IMAGE_TAG }}
+
+      - name: Login to gpasltd OCIR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ secrets.OCR_CONTAINER_USERNAME_GPASLTD }}
+          password: ${{ secrets.OCR_CONTAINER_TOKEN_GPASLTD }}
+
+      - name: Set full image registry tag
+        run: |
+          echo "FULL_IMAGE_TAG=${{ env.REGISTRY }}/${{ env.IMAGE_NAME_GPAS_LTD }}:$REVISION" >> $GITHUB_ENV
+
+      - name: Build and push
+        id: build_and_push_gpas_ltd
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          push: true
+          file: Dockerfile
+          tags: |
+            ${{ env.FULL_IMAGE_TAG }}
+
+      - name: Docker digest
+        run: echo ${{ steps.build_and_push.outputs.digest }}
