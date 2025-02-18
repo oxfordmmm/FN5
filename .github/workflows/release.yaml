@@ -89,7 +89,6 @@ jobs:
         id: build_and_push
         uses: docker/build-push-action@v4
         with:
-          context: .
           push: true
           file: environments/Dockerfile
           tags: |
@@ -106,7 +105,6 @@ jobs:
         id: build_and_push_gpas_ltd
         uses: docker/build-push-action@v4
         with:
-          context: .
           push: true
           file: environments/Dockerfile
           tags: |
