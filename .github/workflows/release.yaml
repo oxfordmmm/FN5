@@ -7,7 +7,7 @@ on:
 
 env:
   REGISTRY: lhr.ocir.io
-  IMAGE_NAME: gpas/fn5
+  IMAGE_NAME: oxfordmmm/fn5
   IMAGE_NAME_GPAS_LTD: oxfordmmm/fn5
 
 jobs:
