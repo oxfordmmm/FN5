@@ -7,8 +7,8 @@ on:
 
 env:
   REGISTRY: lhr.ocir.io
-  IMAGE_NAME: gpas/competitivemapping_pipeline
-  IMAGE_NAME_GPAS_LTD: oxfordmmm/competitivemapping_pipeline
+  IMAGE_NAME: gpas/fn5
+  IMAGE_NAME_GPAS_LTD: oxfordmmm/fn5
 
 jobs:
   unit-tests:
