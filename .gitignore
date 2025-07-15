@@ -68,6 +68,8 @@ mprofile*
 !test/two_samples.txt
 
 saves.old/*
+saves.*
+*.csv
 
 #Keep the python dist files out
 *.egg-info

@@ -96,14 +96,14 @@ vector<Sample*> bulk_load(string path, string reference, unordered_set<int> mask
 *
 * @param comparisons List of precomputed comparisons. Tuples of (guid1, guid2, dist)
 */
-void save_comparisons(vector<tuple<string, string, int>> comparisons);
+void save_comparisons(vector<tuple<string, string, vector<int>>> comparisons);
 
 /**
 * @brief Print a list of comparisons to stdout. Threadsafe
 *
 * @param comparisons List of precomputed comparisons. Tuples of (guid1, guid2, dist)
 */
-void print_comparisons(vector<tuple<string, string, int>> comparisons);
+void print_comparisons(vector<tuple<string, string, vector<int>>> comparisons);
 
 
 /**
@@ -187,4 +187,4 @@ void add_batch(string path, int cutoff);
 * @param cutoff SNP threshold to cutoff at. Defaults to arbirarily high (999999).
 * @returns Vector of distances
 */
-vector<tuple<string, string, int>> multi_matrix(vector<Sample*> samples, int thread_count = 4, int cutoff = 9999999);
+vector<tuple<string, string, vector<int>>> multi_matrix(vector<Sample*> samples, int thread_count = 4, int cutoff = 9999999);

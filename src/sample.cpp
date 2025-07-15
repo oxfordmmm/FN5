@@ -112,17 +112,18 @@ bool Sample::operator== (const Sample &s2) const{
     return check;
 }
 
-int Sample::dist(Sample* sample, int cutoff_){
-    unordered_set<int> acc;
+vector<int> Sample::dist(Sample* sample, int cutoff_){
+    vector<int> acc;
     unsigned int cutoff = cutoff_;
     acc = dist_x(A, N, sample->A, sample->N, acc, cutoff);
     acc = dist_x(C, N, sample->C, sample->N, acc, cutoff);
     acc = dist_x(T, N, sample->T, sample->N, acc, cutoff);
     acc = dist_x(G, N, sample->G, sample->N, acc, cutoff);
-    return acc.size();
+    sort(acc.begin(), acc.end());
+    return acc;
 }
 
-unordered_set<int> Sample::dist_x(vector<int> this_x, vector<int> this_n, vector<int> sample_x, vector<int> sample_n, unordered_set<int> acc, unsigned int cutoff){
+vector<int> Sample::dist_x(vector<int> this_x, vector<int> this_n, vector<int> sample_x, vector<int> sample_n, vector<int> acc, unsigned int cutoff){
     //Increment cutoff so we can reject distances > cutoff entirely
     cutoff++;
     for(const int &elem: this_x){
@@ -133,7 +134,7 @@ unordered_set<int> Sample::dist_x(vector<int> this_x, vector<int> this_n, vector
             //Not a in sample
             if(!binary_search(sample_n.begin(), sample_n.end(), elem)){
                 //Not an N comparison either, so add
-                acc.insert(elem);
+                acc.push_back(elem);
             }
         }
     }
@@ -145,7 +146,7 @@ unordered_set<int> Sample::dist_x(vector<int> this_x, vector<int> this_n, vector
             //Not a in sample
             if(!binary_search(this_n.begin(), this_n.end(), elem)){
                 //Not an N comparison either, so add
-                acc.insert(elem);
+                acc.push_back(elem);
             }
         }
     }
